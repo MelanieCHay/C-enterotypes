@@ -1,0 +1,1944 @@
+---
+title: "Figure4"
+author: "Melanie Hay"
+date: "2023-10-30"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(ggpubr)
+library(scales)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r, Read in metadata}
+
+PA2.df <- read.csv("PA2_RA_compare.csv")
+```
+
+We can't use log transform our data unless we 
+```{r}
+rescale <- function(x) {((x * 1000000) + 1)/ 1000000}
+
+PA2.trans.df <- PA2.df %>%
+  mutate(across(
+    .cols = is.numeric, 
+    .fns = rescale, 
+    .names = "{col}"
+    )) 
+
+write.csv(PA2.trans.df, "PA2.trans.df.csv")
+```
+
+
+
+```{r, Settings for Figures}
+
+my_comparisonsPA <- list(c("PA1", "PA2"), c("PA2", "PA3"), c("PA1", "PA3")) 
+ent_palette <- c("#F86B62", "#00BA38", "#619CFF")
+```
+
+
+################################
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV7_Genus_Campylobacter_D ~ PA2,  data = PA2.trans.df)
+
+
+Campy <- ggboxplot(PA2.trans.df, x = "PA2", y = "ASV7_Genus_Campylobacter_D", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "log10 (Genus_Campylobacter D)", xlab = "Enterotype") + guides(fill = "none") + scale_y_continuous(trans="log10",
+                       breaks = trans_breaks("log10", function(x) 10^x),
+                       labels = trans_format("log10", math_format(10^.x))) +
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 2)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV7_Genus_Campylobacter_D)
+# Result shows not normal
+
+
+#kruskal.test(ASV7_Genus_Campylobacter_D ~ PA2, data = PA2.trans.df)
+#pairwise.wilcox.test(PA2.trans.df$ASV7_Genus_Campylobacter_D, PA2.trans.df$PA2,
+                # p.adjust.method = "BH")
+
+
+#pairwise.wilcox.test(PA2.trans.df$ASV7_Genus_Campylobacter_D, PA2.trans.df$PA2, p.adjust="bonferroni")
+
+Campy 
+ggsave("images/Campy.png", plot=Campy, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV14_Genus_Escherichia ~ PA2,  data = PA2.trans.df)
+
+
+Ecoli <- ggboxplot(PA2.trans.df, x = "PA2", y = "ASV14_Genus_Escherichia", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "Genus Escherichia", xlab = "Enterotype") + guides(fill = "none") + scale_y_continuous(trans="log10",
+                       breaks = trans_breaks("log10", function(x) 10^x),
+                       labels = trans_format("log10", math_format(10^.x))) + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 2)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV14_Genus_Escherichia)
+# Result shows not normal
+
+
+kruskal.test(ASV14_Genus_Escherichia ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV14_Genus_Escherichia, PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV14_Genus_Escherichia, PA2.trans.df$PA2, p.adjust="bonferroni")
+Ecoli
+ggsave("images/Ecoli.png", plot=Ecoli, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV2_Helicobacter_D.pullorum.RS_GCF_008801855_1. ~ PA2,  data = PA2.trans.df)
+
+
+HelicoP <- ggboxplot(PA2.trans.df, x = "PA2", y = "ASV2_Helicobacter_D.pullorum.RS_GCF_008801855_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "Helicobacter D pullorum.", xlab = "Enterotype") + guides(fill = "none") + scale_y_continuous(trans="log10",
+                       breaks = trans_breaks("log10", function(x) 10^x),
+                       labels = trans_format("log10", math_format(10^.x))) + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 2)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV2_Helicobacter_D.pullorum.RS_GCF_008801855_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV2_Helicobacter_D.pullorum.RS_GCF_008801855_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV2_Helicobacter_D.pullorum.RS_GCF_008801855_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV2_Helicobacter_D.pullorum.RS_GCF_008801855_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+HelicoP
+ggsave("images/HelicoP.png", plot=HelicoP, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV1550_Helicobacter_F.sp002287135.RS_GCF_002287135_1. ~ PA2,  data = PA2.trans.df)
+
+
+HelicoF <- ggboxplot(PA2.trans.df, x = "PA2", y = "ASV1550_Helicobacter_F.sp002287135.RS_GCF_002287135_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "Helicobacter F (sp002287135)", xlab = "Enterotype") + guides(fill = "none")  + scale_y_continuous(trans="log10",
+                       breaks = trans_breaks("log10", function(x) 10^x),
+                       labels = trans_format("log10", math_format(10^.x))) + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.01)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV1550_Helicobacter_F.sp002287135.RS_GCF_002287135_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV1550_Helicobacter_F.sp002287135.RS_GCF_002287135_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV1550_Helicobacter_F.sp002287135.RS_GCF_002287135_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV1550_Helicobacter_F.sp002287135.RS_GCF_002287135_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+HelicoF
+ggsave("images/HelicoF.png", plot=HelicoF, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+```{r, fig.width = 14, fig.height =3.2}
+
+ggarrange(Campy, Ecoli, HelicoP, HelicoF, ncol = 4, labels = c("A", "B", "C", "D", widths = 3.5,
+  heights = 3))
+
+ggsave("images/Pathogens.png")
+```
+
+#########################################################################
+
+
+
+
+
+```{r, fig.width = 3.5, fig.height =3.5, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV135_CAG.831.sp902388455.GB_GCA_902388455_1. ~ PA2,  data = PA2.trans.df)
+
+
+x1_CAG831 <- ggboxplot(PA2.trans.df, x = "PA2", y = "ASV135_CAG.831.sp902388455.GB_GCA_902388455_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV135_CAG (831.sp902388455)", xlab = "Enterotype") + guides(fill = "none") + scale_y_continuous(trans="log10",
+                       breaks = trans_breaks("log10", function(x) 10^x),
+                       labels = trans_format("log10", math_format(10^.x))) + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 2)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV135_CAG.831.sp902388455.GB_GCA_902388455_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV135_CAG.831.sp902388455.GB_GCA_902388455_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV135_CAG.831.sp902388455.GB_GCA_902388455_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV135_CAG.831.sp902388455.GB_GCA_902388455_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+x1_CAG831
+
+ggsave("images/test3.png", plot=x1_CAG831, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+
+```{r, fig.width = 3.5, fig.height =3.5, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV29_Enterocloster.sp001517625.RS_GCF_001517625_2. ~ PA2,  data = PA2.trans.df)
+
+
+x2_Enterocloster <- ggboxplot(PA2.trans.df, x = "PA2", y = "ASV29_Enterocloster.sp001517625.RS_GCF_001517625_2.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV29_Enterocloster (sp001517625)", xlab = "Enterotype") + guides(fill = "none") + scale_y_continuous(trans="log10",
+                       breaks = trans_breaks("log10", function(x) 10^x),
+                       labels = trans_format("log10", math_format(10^.x))) +  
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 2)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV29_Enterocloster.sp001517625.RS_GCF_001517625_2.)
+# Result shows not normal
+
+
+kruskal.test(ASV29_Enterocloster.sp001517625.RS_GCF_001517625_2. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV29_Enterocloster.sp001517625.RS_GCF_001517625_2., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV29_Enterocloster.sp001517625.RS_GCF_001517625_2., PA2.trans.df$PA2, p.adjust="bonferroni")
+x2_Enterocloster
+
+ggsave("images/x2_Enterocloster.png", plot=x2_Enterocloster, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+```{r, fig.width = 3.5, fig.height =3.5, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV816_Family_Sphaerochaetaceae ~ PA2,  data = PA2.trans.df)
+
+
+x3_Sphaerochaetaceae <- ggboxplot(PA2.trans.df, x = "PA2", y = "ASV816_Family_Sphaerochaetaceae", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "Family Sphaerochaetaceae", xlab = "Enterotype") + guides(fill = "none") + scale_y_continuous(trans="log10",
+                       breaks = trans_breaks("log10", function(x) 10^x),
+                       labels = trans_format("log10", math_format(10^.x))) +  
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 1)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV816_Family_Sphaerochaetaceae)
+# Result shows not normal
+
+
+kruskal.test(ASV816_Family_Sphaerochaetaceae ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV816_Family_Sphaerochaetaceae, PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV816_Family_Sphaerochaetaceae, PA2.trans.df$PA2, p.adjust="bonferroni")
+x3_Sphaerochaetaceae
+
+ggsave("images/x3_Sphaerochaetaceae.png", plot=x3_Sphaerochaetaceae, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+
+```{r, fig.width = 3.5, fig.height =3.5, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV178_Family_Bacteroidaceae ~ PA2,  data = PA2.trans.df)
+
+
+x4_Family_Bacteroidaceae <- ggboxplot(PA2.trans.df, x = "PA2", y = "ASV178_Family_Bacteroidaceae", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV178_Family_Bacteroidaceae", xlab = "Enterotype") + guides(fill = "none") + scale_y_continuous(trans="log10",
+                       breaks = trans_breaks("log10", function(x) 10^x),
+                       labels = trans_format("log10", math_format(10^.x))) +  
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 2)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV178_Family_Bacteroidaceae)
+# Result shows not normal
+
+
+kruskal.test(ASV178_Family_Bacteroidaceae ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV178_Family_Bacteroidaceae, PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV178_Family_Bacteroidaceae, PA2.trans.df$PA2, p.adjust="bonferroni")
+x4_Family_Bacteroidaceae
+ggsave("images/x4_Family_Bacteroidaceae.png", plot=x4_Family_Bacteroidaceae, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+```{r, fig.width = 3.5, fig.height =3.5, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV526_RC9.sp000434935.GB_GCA_000434935_1. ~ PA2,  data = PA2.trans.df)
+
+
+x5ASV526_RC9 <- ggboxplot(PA2.trans.df, x = "PA2", y = "ASV526_RC9.sp000434935.GB_GCA_000434935_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV526_RC9 (sp000434935)", xlab = "Enterotype") + guides(fill = "none") + scale_y_continuous(trans="log10",
+                       breaks = trans_breaks("log10", function(x) 10^x),
+                       labels = trans_format("log10", math_format(10^.x))) +  
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 2)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV526_RC9.sp000434935.GB_GCA_000434935_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV526_RC9.sp000434935.GB_GCA_000434935_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV526_RC9.sp000434935.GB_GCA_000434935_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV526_RC9.sp000434935.GB_GCA_000434935_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+x5ASV526_RC9
+
+ggsave("images/x5ASV526_RC9.png", plot=x5ASV526_RC9, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+
+```
+
+
+```{r, fig.width = 3.5, fig.height =3.5, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV25_Family_Lachnospiraceae ~ PA2,  data = PA2.trans.df)
+
+
+x6Lachnospiraceae <- ggboxplot(PA2.trans.df, x = "PA2", y = "ASV25_Family_Lachnospiraceae", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV25_Family_Lachnospiraceae", xlab = "Enterotype") + guides(fill = "none") + scale_y_continuous(trans="log10",
+                       breaks = trans_breaks("log10", function(x) 10^x),
+                       labels = trans_format("log10", math_format(10^.x))) +  
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.5)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV25_Family_Lachnospiraceae)
+# Result shows not normal
+
+
+kruskal.test(ASV25_Family_Lachnospiraceae ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV25_Family_Lachnospiraceae, PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV25_Family_Lachnospiraceae, PA2.trans.df$PA2, p.adjust="bonferroni")
+x6Lachnospiraceae
+
+ggsave("images/x6Lachnospiraceae.png", plot=x6Lachnospiraceae, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV91_UMGS1004.sp900761685.RS_GCF_900761685_1. ~ PA2,  data = PA2.trans.df)
+
+
+x7ASV91_UMGS <- ggboxplot(PA2.trans.df, x = "PA2", y = "ASV91_UMGS1004.sp900761685.RS_GCF_900761685_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV91_UMGS1004 (sp900761685)", xlab = "Enterotype") + guides(fill = "none") + scale_y_continuous(trans="log10",
+                       breaks = trans_breaks("log10", function(x) 10^x),
+                       labels = trans_format("log10", math_format(10^.x))) +  
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 2)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV91_UMGS1004.sp900761685.RS_GCF_900761685_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV91_UMGS1004.sp900761685.RS_GCF_900761685_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV91_UMGS1004.sp900761685.RS_GCF_900761685_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV91_UMGS1004.sp900761685.RS_GCF_900761685_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+x7ASV91_UMGS
+ggsave("images/x7ASV91_UMGS.png", plot=x7ASV91_UMGS, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV83_Family_Ruminococcaceae ~ PA2,  data = PA2.trans.df)
+
+
+x8Ruminococcaceae <- ggboxplot(PA2.trans.df, x = "PA2", y = "ASV83_Family_Ruminococcaceae", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV83_Family_Ruminococcaceae", xlab = "Enterotype") + guides(fill = "none") + scale_y_continuous(trans="log10",
+                       breaks = trans_breaks("log10", function(x) 10^x),
+                       labels = trans_format("log10", math_format(10^.x))) + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 2)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV83_Family_Ruminococcaceae)
+# Result shows not normal
+
+
+kruskal.test(ASV83_Family_Ruminococcaceae ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV83_Family_Ruminococcaceae, PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV83_Family_Ruminococcaceae, PA2.trans.df$PA2, p.adjust="bonferroni")
+x8Ruminococcaceae
+ggsave("images/x8Ruminococcaceae.png", plot=x8Ruminococcaceae, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+
+```{r, fig.width = 3.5, fig.height =3.5, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV249_Mucispirillum.schaedleri.RS_GCF_000487995_1. ~ PA2,  data = PA2.trans.df)
+
+
+x9Mucispirillum <- ggboxplot(PA2.trans.df, x = "PA2", y = "ASV249_Mucispirillum.schaedleri.RS_GCF_000487995_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV249_Mucispirillum.schaedleri", xlab = "Enterotype") + guides(fill = "none") + scale_y_continuous(trans="log10",
+                       breaks = trans_breaks("log10", function(x) 10^x),
+                       labels = trans_format("log10", math_format(10^.x))) + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 2)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV249_Mucispirillum.schaedleri.RS_GCF_000487995_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV249_Mucispirillum.schaedleri.RS_GCF_000487995_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV249_Mucispirillum.schaedleri.RS_GCF_000487995_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV249_Mucispirillum.schaedleri.RS_GCF_000487995_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+x9Mucispirillum
+
+ggsave("images/x9Mucispirillum.png", plot=x9Mucispirillum, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+
+```
+
+```{r, fig.width = 3.5, fig.height =3.5, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV309_Order_Enterobacterales ~ PA2,  data = PA2.trans.df)
+
+
+x10Enterobacterales <- ggboxplot(PA2.trans.df, x = "PA2", y = "ASV309_Order_Enterobacterales", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV309 Order Enterobacterales", xlab = "Enterotype") + guides(fill = "none") + scale_y_continuous(trans="log10",
+                       breaks = trans_breaks("log10", function(x) 10^x),
+                       labels = trans_format("log10", math_format(10^.x))) + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 1)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV309_Order_Enterobacterales)
+# Result shows not normal
+
+
+kruskal.test(ASV309_Order_Enterobacterales ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV309_Order_Enterobacterales, PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV309_Order_Enterobacterales, PA2.trans.df$PA2, p.adjust="bonferroni")
+x10Enterobacterales
+
+ggsave("images/x10Enterobacterales.png", plot=x10Enterobacterales, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+
+```
+
+```{r, fig.width = 3.5, fig.height =3.5, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV142_Dialister.sp900765565.GB_GCA_900765565_1. ~ PA2,  data = PA2.trans.df)
+
+
+x11Dialister <- ggboxplot(PA2.trans.df, x = "PA2", y = "ASV142_Dialister.sp900765565.GB_GCA_900765565_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV142_Dialister (sp900765565) ", xlab = "Enterotype") + guides(fill = "none") + scale_y_continuous(trans="log10",
+                       breaks = trans_breaks("log10", function(x) 10^x),
+                       labels = trans_format("log10", math_format(10^.x))) + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 1)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV142_Dialister.sp900765565.GB_GCA_900765565_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV142_Dialister.sp900765565.GB_GCA_900765565_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV142_Dialister.sp900765565.GB_GCA_900765565_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV142_Dialister.sp900765565.GB_GCA_900765565_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+x11Dialister
+
+ggsave("images/x11Dialister.png", plot=x11Dialister, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+
+```
+
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV1259_CAG.462.sp900291465.RS_GCF_900291465_1. ~ PA2,  data = PA2.trans.df)
+
+
+x12CAG462 <- ggboxplot(PA2.trans.df, x = "PA2", y = "ASV1259_CAG.462.sp900291465.RS_GCF_900291465_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV1259_CAG462 (sp900291465)", xlab = "Enterotype") + guides(fill = "none") + scale_y_continuous(trans="log10",
+                       breaks = trans_breaks("log10", function(x) 10^x),
+                       labels = trans_format("log10", math_format(10^.x))) + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.025)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV1259_CAG.462.sp900291465.RS_GCF_900291465_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV1259_CAG.462.sp900291465.RS_GCF_900291465_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV1259_CAG.462.sp900291465.RS_GCF_900291465_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV1259_CAG.462.sp900291465.RS_GCF_900291465_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+
+x12CAG462
+ggsave("images/x12CAG462.png", plot=x12CAG462, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+
+# Perorm pairwise comparisons
+compare_means(ASV1_Phascolarctobacterium_A.sp900545025.GB_GCA_900545025_1. ~ PA2,  data = PA2.trans.df)
+
+
+x13Phascolarctobacterium <- ggboxplot(PA2.trans.df, x = "PA2", y = "ASV1_Phascolarctobacterium_A.sp900545025.GB_GCA_900545025_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV1_Phascolarctobacterium_A (sp900545025)", xlab = "Enterotype") + guides(fill = "none") + scale_y_continuous(trans="log10",
+                       breaks = trans_breaks("log10", function(x) 10^x),
+                       labels = trans_format("log10", math_format(10^.x))) +  
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 2.5)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV1_Phascolarctobacterium_A.sp900545025.GB_GCA_900545025_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV1_Phascolarctobacterium_A.sp900545025.GB_GCA_900545025_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV1_Phascolarctobacterium_A.sp900545025.GB_GCA_900545025_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV1_Phascolarctobacterium_A.sp900545025.GB_GCA_900545025_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+
+x13Phascolarctobacterium 
+ggsave("images/x13Phascolarctobacterium .png", plot=x13Phascolarctobacterium , scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV156_Prevotellamassilia.sp004558535.GB_GCA_004558535_1. ~ PA2,  data = PA2.trans.df)
+
+
+x14Prevotellamassilia <- ggboxplot(PA2.trans.df, x = "PA2", y = "ASV156_Prevotellamassilia.sp004558535.GB_GCA_004558535_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV156_Prevotellamassilia (sp004558535)", xlab = "Enterotype") + guides(fill = "none") + scale_y_continuous(trans="log10",
+                       breaks = trans_breaks("log10", function(x) 10^x),
+                       labels = trans_format("log10", math_format(10^.x))) + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 1)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV156_Prevotellamassilia.sp004558535.GB_GCA_004558535_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV156_Prevotellamassilia.sp004558535.GB_GCA_004558535_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV156_Prevotellamassilia.sp004558535.GB_GCA_004558535_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV156_Prevotellamassilia.sp004558535.GB_GCA_004558535_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+x14Prevotellamassilia 
+ggsave("images/x14Prevotellamassilia .png", plot=x14Prevotellamassilia, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV328_RUG13077.sp902785485.GB_GCA_902785485_1. ~ PA2,  data = PA2.trans.df)
+
+
+x15RUG13077 <- ggboxplot(PA2.trans.df, x = "PA2", y = "ASV328_RUG13077.sp902785485.GB_GCA_902785485_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV328_RUG13077 (sp902785485)", xlab = "Enterotype") + guides(fill = "none") + scale_y_continuous(trans="log10",
+                       breaks = trans_breaks("log10", function(x) 10^x),
+                       labels = trans_format("log10", math_format(10^.x))) +  
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.014)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV328_RUG13077.sp902785485.GB_GCA_902785485_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV328_RUG13077.sp902785485.GB_GCA_902785485_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV328_RUG13077.sp902785485.GB_GCA_902785485_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV328_RUG13077.sp902785485.GB_GCA_902785485_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+x15RUG13077
+ggsave("images/x15RUG13077.png", plot=x15RUG13077, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV508_Order_Oscillospirales ~ PA2,  data = PA2.trans.df)
+
+
+x16Oscillospirales <- ggboxplot(PA2.trans.df, x = "PA2", y = "ASV508_Order_Oscillospirales", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV508_Order_Oscillospirales", xlab = "Enterotype") + guides(fill = "none") + scale_y_continuous(trans="log10",
+                       breaks = trans_breaks("log10", function(x) 10^x),
+                       labels = trans_format("log10", math_format(10^.x))) + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 1)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV508_Order_Oscillospirales)
+# Result shows not normal
+
+
+kruskal.test(ASV508_Order_Oscillospirales ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV508_Order_Oscillospirales, PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV508_Order_Oscillospirales, PA2.trans.df$PA2, p.adjust="bonferroni")
+x16Oscillospirales
+ggsave("images/x16Oscillospirales.png", plot=x16Oscillospirales, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV676_Class_Clostridia ~ PA2,  data = PA2.trans.df)
+
+
+x17Clostridia <- ggboxplot(PA2.trans.df, x = "PA2", y = "ASV676_Class_Clostridia", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV676_Class_Clostridia", xlab = "Enterotype") + guides(fill = "none") + scale_y_continuous(trans="log10",
+                       breaks = trans_breaks("log10", function(x) 10^x),
+                       labels = trans_format("log10", math_format(10^.x))) +  
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.025)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV676_Class_Clostridia)
+# Result shows not normal
+
+
+kruskal.test(ASV676_Class_Clostridia ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV676_Class_Clostridia, PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV676_Class_Clostridia, PA2.trans.df$PA2, p.adjust="bonferroni")
+x17Clostridia
+ggsave("images/x17Clostridia.png", plot=x17Clostridia, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV150_Dysosmobacter.sp001916835.RS_GCF_014297285_1. ~ PA2,  data = PA2.trans.df)
+
+
+x18Dysosmobacter <- ggboxplot(PA2.trans.df, x = "PA2", y = "ASV150_Dysosmobacter.sp001916835.RS_GCF_014297285_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV150_Dysosmobacter (sp001916835)", xlab = "Enterotype") + guides(fill = "none") + scale_y_continuous(trans="log10",
+                       breaks = trans_breaks("log10", function(x) 10^x),
+                       labels = trans_format("log10", math_format(10^.x))) + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 1)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV150_Dysosmobacter.sp001916835.RS_GCF_014297285_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV150_Dysosmobacter.sp001916835.RS_GCF_014297285_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV150_Dysosmobacter.sp001916835.RS_GCF_014297285_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV150_Dysosmobacter.sp001916835.RS_GCF_014297285_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+x18Dysosmobacter
+ggsave("images/x18Dysosmobacter.png", plot=x18Dysosmobacter, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV1986_NSJ.50.sp014385105.GB_GCA_014385105_1. ~ PA2,  data = PA2.trans.df)
+
+
+x19NSJ.50 <- ggboxplot(PA2.trans.df, x = "PA2", y = "ASV1986_NSJ.50.sp014385105.GB_GCA_014385105_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV1986_NSJ.50 (sp014385105)", xlab = "Enterotype") + guides(fill = "none") + scale_y_continuous(trans="log10",
+                       breaks = trans_breaks("log10", function(x) 10^x),
+                       labels = trans_format("log10", math_format(10^.x))) + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV1986_NSJ.50.sp014385105.GB_GCA_014385105_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV1986_NSJ.50.sp014385105.GB_GCA_014385105_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV1986_NSJ.50.sp014385105.GB_GCA_014385105_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV1986_NSJ.50.sp014385105.GB_GCA_014385105_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+x19NSJ.50 
+ggsave("images/x19NSJ.50.png", plot=x19NSJ.50, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV1500_Monoglobus.pectinilyticus.RS_GCF_002874775_1. ~ PA2,  data = PA2.trans.df)
+
+
+x20Monoglobus <- ggboxplot(PA2.trans.df, x = "PA2", y = "ASV1500_Monoglobus.pectinilyticus.RS_GCF_002874775_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV1500_Monoglobus pectinilyticus", xlab = "Enterotype") + guides(fill = "none") + scale_y_continuous(trans="log10",
+                       breaks = trans_breaks("log10", function(x) 10^x),
+                       labels = trans_format("log10", math_format(10^.x))) + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV1500_Monoglobus.pectinilyticus.RS_GCF_002874775_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV1500_Monoglobus.pectinilyticus.RS_GCF_002874775_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV1500_Monoglobus.pectinilyticus.RS_GCF_002874775_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV1500_Monoglobus.pectinilyticus.RS_GCF_002874775_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+x20Monoglobus
+ggsave("images/x20Monoglobus.png", plot=x20Monoglobus, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV177_Eisenbergiella.sp900066775.RS_GCF_003481005_1. ~ PA2,  data = PA2.trans.df)
+
+
+x21Eisenbergiella  <- ggboxplot(PA2.trans.df, x = "PA2", y = "ASV177_Eisenbergiella.sp900066775.RS_GCF_003481005_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV177_Eisenbergiella (sp900066775", xlab = "Enterotype") + guides(fill = "none") + scale_y_continuous(trans="log10",
+                       breaks = trans_breaks("log10", function(x) 10^x),
+                       labels = trans_format("log10", math_format(10^.x))) + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 2)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV177_Eisenbergiella.sp900066775.RS_GCF_003481005_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV177_Eisenbergiella.sp900066775.RS_GCF_003481005_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV177_Eisenbergiella.sp900066775.RS_GCF_003481005_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV177_Eisenbergiella.sp900066775.RS_GCF_003481005_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+x21Eisenbergiella
+ggsave("images/x21Eisenbergiella.png", plot=x21Eisenbergiella, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV4_Phocaeicola.dorei.RS_GCF_013009555_1. ~ PA2,  data = PA2.trans.df)
+
+
+x22Phocaeicola <- ggboxplot(PA2.trans.df, x = "PA2", y = "ASV4_Phocaeicola.dorei.RS_GCF_013009555_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV4_Phocaeicola dorei", xlab = "Enterotype") + guides(fill = "none") + scale_y_continuous(trans="log10",
+                       breaks = trans_breaks("log10", function(x) 10^x),
+                       labels = trans_format("log10", math_format(10^.x))) +  
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 2)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV4_Phocaeicola.dorei.RS_GCF_013009555_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV4_Phocaeicola.dorei.RS_GCF_013009555_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV4_Phocaeicola.dorei.RS_GCF_013009555_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+x22Phocaeicola 
+pairwise.wilcox.test(PA2.trans.df$ASV4_Phocaeicola.dorei.RS_GCF_013009555_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+ggsave("images/x22Phocaeicola.png", plot=x22Phocaeicola, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+
+```
+
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV16_Cloacibacillus.porcorum.RS_GCF_001701045_1. ~ PA2,  data = PA2.trans.df)
+
+
+x23Cloacibacillus <- ggboxplot(PA2.trans.df, x = "PA2", y = "ASV16_Cloacibacillus.porcorum.RS_GCF_001701045_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV16_Cloacibacillus.porcorum", xlab = "Enterotype") + guides(fill = "none") + scale_y_continuous(trans="log10",
+                       breaks = trans_breaks("log10", function(x) 10^x),
+                       labels = trans_format("log10", math_format(10^.x))) +  
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 2)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV16_Cloacibacillus.porcorum.RS_GCF_001701045_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV16_Cloacibacillus.porcorum.RS_GCF_001701045_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV16_Cloacibacillus.porcorum.RS_GCF_001701045_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV16_Cloacibacillus.porcorum.RS_GCF_001701045_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+x23Cloacibacillus
+ggsave("images/x23Cloacibacillus.png", plot=x23Cloacibacillus, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV12_Prevotella.rara.RS_GCF_001275135_1. ~ PA2,  data = PA2.trans.df)
+
+
+x24Prevotella <- ggboxplot(PA2.trans.df, x = "PA2", y = "ASV12_Prevotella.rara.RS_GCF_001275135_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV12_Prevotella rara", xlab = "Enterotype") + guides(fill = "none") + scale_y_continuous(trans="log10",
+                       breaks = trans_breaks("log10", function(x) 10^x),
+                       labels = trans_format("log10", math_format(10^.x))) + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 2)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV12_Prevotella.rara.RS_GCF_001275135_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV12_Prevotella.rara.RS_GCF_001275135_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV12_Prevotella.rara.RS_GCF_001275135_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV12_Prevotella.rara.RS_GCF_001275135_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+x24Prevotella
+ggsave("images/x24Prevotella.png", plot=x24Prevotella, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV67_Coprobacter.fastidiosus.RS_GCF_000473955_1. ~ PA2,  data = PA2.trans.df)
+
+
+x25Coprobacter <- ggboxplot(PA2.trans.df, x = "PA2", y = "ASV67_Coprobacter.fastidiosus.RS_GCF_000473955_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV67_Coprobacter fastidiosus", xlab = "Enterotype") + guides(fill = "none") + scale_y_continuous(trans="log10",
+                       breaks = trans_breaks("log10", function(x) 10^x),
+                       labels = trans_format("log10", math_format(10^.x))) +  
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 2)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV67_Coprobacter.fastidiosus.RS_GCF_000473955_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV67_Coprobacter.fastidiosus.RS_GCF_000473955_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV67_Coprobacter.fastidiosus.RS_GCF_000473955_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV67_Coprobacter.fastidiosus.RS_GCF_000473955_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+x25Coprobacter
+ggsave("images/x25Coprobacter.png", plot=x25Coprobacter, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+```{r, fig.width=16, fig.height=20}
+#ggarrange(Campy, Ecoli, HelicoP, HelicoF, ncol = 4, labels = c("A", "B", "C", "D", widths = 3.5,
+ # heights = 3))
+
+Diff_abund <- ggarrange(x1_CAG831, x2_Enterocloster, x3_Sphaerochaetaceae, x4_Family_Bacteroidaceae, x5ASV526_RC9,
+          x6Lachnospiraceae, x7ASV91_UMGS, x8Ruminococcaceae, x9Mucispirillum, x10Enterobacterales,
+          x11Dialister, x12CAG462, x13Phascolarctobacterium, x14Prevotellamassilia, x15RUG13077,
+          x16Oscillospirales, x17Clostridia, x18Dysosmobacter, x19NSJ.50, x20Monoglobus,
+          x21Eisenbergiella, x22Phocaeicola, x23Cloacibacillus, x24Prevotella, x25Coprobacter, 
+          labels = c("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y"),
+          ncol = 5, nrow = 5)
+
+
+Diff_abund
+
+ggsave(ggsave("images/diff_abund.png", plot=Diff_abund, width = 20, height = 20, scale = 1, dpi = 600))
+```
+
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV3_Faecalibacterium.sp002160895.RS_GCF_002160895_1. ~ PA2,  data = PA2.trans.df)
+
+
+ggboxplot(PA2.trans.df, x = "PA2", y = "ASV3_Faecalibacterium.sp002160895.RS_GCF_002160895_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV3_Faecalibacterium.sp002160895.RS_GCF_002160895_1.", xlab = "Enterotype") + guides(fill = "none") + scale_y_continuous(trans="log10",
+                       breaks = trans_breaks("log10", function(x) 10^x),
+                       labels = trans_format("log10", math_format(10^.x))) + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 1)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV3_Faecalibacterium.sp002160895.RS_GCF_002160895_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV3_Faecalibacterium.sp002160895.RS_GCF_002160895_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV3_Faecalibacterium.sp002160895.RS_GCF_002160895_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV3_Faecalibacterium.sp002160895.RS_GCF_002160895_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+x24Prevotella
+ggsave("images/x24Prevotella.png", plot=x24Prevotella, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+
+
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV25_Family_Lachnospiraceae ~ PA2,  data = PA2.trans.df)
+
+
+Family_Lachnospiraceae <- ggboxplot(PA2.trans.df, x = "PA2", y = "ASV25_Family_Lachnospiraceae", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV25_Family_Lachnospiraceae", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.42)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV25_Family_Lachnospiraceae)
+# Result shows not normal
+
+
+kruskal.test(ASV25_Family_Lachnospiraceae ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV25_Family_Lachnospiraceae, PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV25_Family_Lachnospiraceae, PA2.trans.df$PA2, p.adjust="bonferroni")
+Family_Lachnospiraceae
+ggsave("images/Family_Lachnospiraceae.png", plot=Family_Lachnospiraceae, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV6965_Family_Victivallaceae ~ PA2,  data = PA2.trans.df)
+
+
+Family_Victivallaceae <- ggboxplot(PA2.trans.df, x = "PA2", y = "ASV6965_Family_Victivallaceae", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV6965_Family_Victivallaceae", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.003)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV6965_Family_Victivallaceae)
+# Result shows not normal
+
+
+kruskal.test(ASV6965_Family_Victivallaceae ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV6965_Family_Victivallaceae, PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV6965_Family_Victivallaceae, PA2.trans.df$PA2, p.adjust="bonferroni")
+Family_Victivallaceae
+ggsave("images/Family_Victivallaceae.png", plot=Family_Victivallaceae, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV309_Order_Enterobacterales ~ PA2,  data = PA2.trans.df)
+
+
+Order_Enterobacterales <- ggboxplot(PA2.trans.df, x = "PA2", y = "ASV309_Order_Enterobacterales", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV309_Order_Enterobacterales", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.065)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV309_Order_Enterobacterales)
+# Result shows not normal
+
+
+kruskal.test(ASV309_Order_Enterobacterales ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV309_Order_Enterobacterales, PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV309_Order_Enterobacterales, PA2.trans.df$PA2, p.adjust="bonferroni")
+Order_Enterobacterales
+ggsave("images/Order_Enterobacterales.png", plot=Order_Enterobacterales, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV7781_SDRW01.sp007845485.RS_GCF_007845485_1. ~ PA2,  data = PA2.trans.df)
+
+
+ggboxplot(PA2.trans.df, x = "PA2", y = "ASV7781_SDRW01.sp007845485.RS_GCF_007845485_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV7781_SDRW01.sp007845485.RS_GCF_007845485_1.", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.01)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV7781_SDRW01.sp007845485.RS_GCF_007845485_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV7781_SDRW01.sp007845485.RS_GCF_007845485_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV7781_SDRW01.sp007845485.RS_GCF_007845485_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV7781_SDRW01.sp007845485.RS_GCF_007845485_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+ggsave("images/Campy.png", plot=Campy, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV5605_2011.GWC2.44.17.sp001029695.GB_GCA_001029695_1. ~ PA2,  data = PA2.trans.df)
+
+
+ggboxplot(PA2.trans.df, x = "PA2", y = "ASV5605_2011.GWC2.44.17.sp001029695.GB_GCA_001029695_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV5605_2011.GWC2.44.17.sp001029695.GB_GCA_001029695_1.", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.003)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV5605_2011.GWC2.44.17.sp001029695.GB_GCA_001029695_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV5605_2011.GWC2.44.17.sp001029695.GB_GCA_001029695_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV5605_2011.GWC2.44.17.sp001029695.GB_GCA_001029695_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV5605_2011.GWC2.44.17.sp001029695.GB_GCA_001029695_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+ggsave("images/Campy.png", plot=Campy, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV3797_Leuconostoc.lactis.GB_GCA_014651235_1. ~ PA2,  data = PA2.trans.df)
+
+
+ggboxplot(PA2.trans.df, x = "PA2", y = "ASV3797_Leuconostoc.lactis.GB_GCA_014651235_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV3797_Leuconostoc.lactis.GB_GCA_014651235_1.", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.003)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV3797_Leuconostoc.lactis.GB_GCA_014651235_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV3797_Leuconostoc.lactis.GB_GCA_014651235_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV3797_Leuconostoc.lactis.GB_GCA_014651235_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV3797_Leuconostoc.lactis.GB_GCA_014651235_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+ggsave("images/Campy.png", plot=Campy, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV249_Mucispirillum.schaedleri.RS_GCF_000487995_1. ~ PA2,  data = PA2.trans.df)
+
+
+ggboxplot(PA2.trans.df, x = "PA2", y = "ASV249_Mucispirillum.schaedleri.RS_GCF_000487995_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV249_Mucispirillum.schaedleri.RS_GCF_000487995_1.", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.12)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV249_Mucispirillum.schaedleri.RS_GCF_000487995_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV249_Mucispirillum.schaedleri.RS_GCF_000487995_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV249_Mucispirillum.schaedleri.RS_GCF_000487995_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV249_Mucispirillum.schaedleri.RS_GCF_000487995_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+ggsave("images/Campy.png", plot=Campy, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV1815_Order_Treponematales ~ PA2,  data = PA2.trans.df)
+
+
+ggboxplot(PA2.trans.df, x = "PA2", y = "ASV1815_Order_Treponematales", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV1815_Order_Treponematales", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.03)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV1815_Order_Treponematales)
+# Result shows not normal
+
+
+kruskal.test(ASV1815_Order_Treponematales ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV1815_Order_Treponematales, PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV1815_Order_Treponematales, PA2.trans.df$PA2, p.adjust="bonferroni")
+ggsave("images/Campy.png", plot=Campy, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV4910_Furfurilactobacillus.siliginis.RS_GCF_001437435_1. ~ PA2,  data = PA2.trans.df)
+
+
+ggboxplot(PA2.trans.df, x = "PA2", y = "ASV4910_Furfurilactobacillus.siliginis.RS_GCF_001437435_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV4910_Furfurilactobacillus.siliginis.RS_GCF_001437435_1.", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.003)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV4910_Furfurilactobacillus.siliginis.RS_GCF_001437435_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV4910_Furfurilactobacillus.siliginis.RS_GCF_001437435_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV4910_Furfurilactobacillus.siliginis.RS_GCF_001437435_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV4910_Furfurilactobacillus.siliginis.RS_GCF_001437435_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+ggsave("images/Campy.png", plot=Campy, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV12812_Family_Staphylococcaceae ~ PA2,  data = PA2.trans.df)
+
+
+ggboxplot(PA2.trans.df, x = "PA2", y = "ASV12812_Family_Staphylococcaceae", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV12812_Family_Staphylococcaceae", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.003)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV12812_Family_Staphylococcaceae)
+# Result shows not normal
+
+
+kruskal.test(ASV12812_Family_Staphylococcaceae ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV12812_Family_Staphylococcaceae, PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV12812_Family_Staphylococcaceae, PA2.trans.df$PA2, p.adjust="bonferroni")
+ggsave("images/Campy.png", plot=Campy, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV5592_Class_Negativicutes ~ PA2,  data = PA2.trans.df)
+
+
+ggboxplot(PA2.trans.df, x = "PA2", y = "ASV5592_Class_Negativicutes", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV5592_Class_Negativicutes", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.003)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV5592_Class_Negativicutes)
+# Result shows not normal
+
+
+kruskal.test(ASV5592_Class_Negativicutes ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV5592_Class_Negativicutes, PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV5592_Class_Negativicutes, PA2.trans.df$PA2, p.adjust="bonferroni")
+ggsave("images/Campy.png", plot=Campy, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV7333_UBA945.sp900197595.RS_GCF_900197595_1. ~ PA2,  data = PA2.trans.df)
+
+
+ggboxplot(PA2.trans.df, x = "PA2", y = "ASV7333_UBA945.sp900197595.RS_GCF_900197595_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV7333_UBA945.sp900197595.RS_GCF_900197595_1.", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.0003)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV7333_UBA945.sp900197595.RS_GCF_900197595_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV7333_UBA945.sp900197595.RS_GCF_900197595_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV7333_UBA945.sp900197595.RS_GCF_900197595_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV7333_UBA945.sp900197595.RS_GCF_900197595_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+ggsave("images/Campy.png", plot=Campy, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV2796_Family_Sediminispirochaetaceae ~ PA2,  data = PA2.trans.df)
+
+
+ggboxplot(PA2.trans.df, x = "PA2", y = "ASV2796_Family_Sediminispirochaetaceae", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV2796_Family_Sediminispirochaetaceae", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.03)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV2796_Family_Sediminispirochaetaceae)
+# Result shows not normal
+
+
+kruskal.test(ASV2796_Family_Sediminispirochaetaceae ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV2796_Family_Sediminispirochaetaceae, PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV2796_Family_Sediminispirochaetaceae, PA2.trans.df$PA2, p.adjust="bonferroni")
+ggsave("images/Campy.png", plot=Campy, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV788_Formamonas.warabiya.RS_GCF_002777255_1. ~ PA2,  data = PA2.trans.df)
+
+
+ggboxplot(PA2.trans.df, x = "PA2", y = "ASV788_Formamonas.warabiya.RS_GCF_002777255_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV788_Formamonas.warabiya.RS_GCF_002777255_1.", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.0165)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV788_Formamonas.warabiya.RS_GCF_002777255_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV788_Formamonas.warabiya.RS_GCF_002777255_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV788_Formamonas.warabiya.RS_GCF_002777255_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV788_Formamonas.warabiya.RS_GCF_002777255_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+ggsave("images/Campy.png", plot=Campy, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV5552_UBA9732.sp902781545.GB_GCA_902781545_1. ~ PA2,  data = PA2.trans.df)
+
+
+ggboxplot(PA2.trans.df, x = "PA2", y = "ASV5552_UBA9732.sp902781545.GB_GCA_902781545_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV5552_UBA9732.sp902781545.GB_GCA_902781545_1.", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.003)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV5552_UBA9732.sp902781545.GB_GCA_902781545_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV5552_UBA9732.sp902781545.GB_GCA_902781545_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV5552_UBA9732.sp902781545.GB_GCA_902781545_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV5552_UBA9732.sp902781545.GB_GCA_902781545_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+ggsave("images/Campy.png", plot=Campy, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV83_Family_Ruminococcaceae ~ PA2,  data = PA2.trans.df)
+
+
+ggboxplot(PA2.trans.df, x = "PA2", y = "ASV83_Family_Ruminococcaceae", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV83_Family_Ruminococcaceae", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.2)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV83_Family_Ruminococcaceae)
+# Result shows not normal
+
+
+kruskal.test(ASV83_Family_Ruminococcaceae ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV83_Family_Ruminococcaceae, PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV83_Family_Ruminococcaceae, PA2.trans.df$PA2, p.adjust="bonferroni")
+ggsave("images/Campy.png", plot=Campy, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV50_Acutalibacter.timonensis.RS_GCF_900048895_1. ~ PA2,  data = PA2.trans.df)
+
+
+ggboxplot(PA2.trans.df, x = "PA2", y = "ASV50_Acutalibacter.timonensis.RS_GCF_900048895_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV50_Acutalibacter.timonensis.RS_GCF_900048895_1.", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.055)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV50_Acutalibacter.timonensis.RS_GCF_900048895_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV50_Acutalibacter.timonensis.RS_GCF_900048895_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV50_Acutalibacter.timonensis.RS_GCF_900048895_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV50_Acutalibacter.timonensis.RS_GCF_900048895_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+ggsave("images/Campy.png", plot=Campy, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV50_Acutalibacter.timonensis.RS_GCF_900048895_1. ~ JBA_clusters,  data = JBA.df)
+
+
+ggboxplot(JBA.df, x = "JBA_clusters", y = "ASV50_Acutalibacter.timonensis.RS_GCF_900048895_1.", 
+          fill = "JBA_clusters", palette = ent_palette,
+          ylab = "ASV50_Acutalibacter.timonensis.RS_GCF_900048895_1.", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsJBA) + ggpubr::stat_compare_means(label.y = 0.055)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(JBA.df$ASV50_Acutalibacter.timonensis.RS_GCF_900048895_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV50_Acutalibacter.timonensis.RS_GCF_900048895_1. ~ JBA_clusters, data = JBA.df)
+pairwise.wilcox.test(JBA.df$ASV50_Acutalibacter.timonensis.RS_GCF_900048895_1., JBA.df$JBA_clusters,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(JBA.df$ASV50_Acutalibacter.timonensis.RS_GCF_900048895_1., JBA.df$JBA_clusters, p.adjust="bonferroni")
+ggsave("images/Campy.png", plot=Campy, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV1011_SCTM01.sp004297485.GB_GCA_004297485_1. ~ PA2,  data = PA2.trans.df)
+
+
+ggboxplot(PA2.trans.df, x = "PA2", y = "ASV1011_SCTM01.sp004297485.GB_GCA_004297485_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV1011_SCTM01.sp004297485.GB_GCA_004297485_1.", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.022)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV1011_SCTM01.sp004297485.GB_GCA_004297485_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV1011_SCTM01.sp004297485.GB_GCA_004297485_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV1011_SCTM01.sp004297485.GB_GCA_004297485_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV1011_SCTM01.sp004297485.GB_GCA_004297485_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+ggsave("images/Campy.png", plot=Campy, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV7_Genus_Campylobacter_D ~ PA2,  data = PA2.trans.df)
+
+
+ggboxplot(PA2.trans.df, x = "PA2", y = "ASV7_Genus_Campylobacter_D", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "Campylobacter_D", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.3)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV7_Genus_Campylobacter_D)
+# Result shows not normal
+
+
+kruskal.test(ASV7_Genus_Campylobacter_D ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV7_Genus_Campylobacter_D, PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV7_Genus_Campylobacter_D, PA2.trans.df$PA2, p.adjust="bonferroni")
+ggsave("images/Campy.png", plot=Campy, scale = 1, width = 3.5, height = 3, units = c("in"), dpi = 300)
+```
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV7_Genus_Campylobacter_D ~ JBA_clusters,  data = JBA.df)
+
+
+ggboxplot(JBA.df, x = "JBA_clusters", y = "ASV7_Genus_Campylobacter_D", 
+          fill = "JBA_clusters", palette = ent_palette,
+          ylab = "ASV7_Genus_Campylobacter_D", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsJBA) + ggpubr::stat_compare_means(label.y = 0.3)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(JBA.df$ASV7_Genus_Campylobacter_D)
+# Result shows not normal
+
+
+kruskal.test(ASV7_Genus_Campylobacter_D ~ JBA_clusters, data = JBA.df)
+pairwise.wilcox.test(JBA.df$ASV7_Genus_Campylobacter_D, JBA.df$JBA,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(JBA.df$ASV7_Genus_Campylobacter_D, JBA.df$JBA_clusters, p.adjust="bonferroni")
+```
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV112_Family_Megasphaeraceae ~ PA2,  data = PA2.trans.df)
+
+
+ggboxplot(PA2.trans.df, x = "PA2", y = "ASV112_Family_Megasphaeraceae", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV112_Family_Megasphaeraceae", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.085)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV112_Family_Megasphaeraceae)
+# Result shows not normal
+
+
+kruskal.test(ASV112_Family_Megasphaeraceae ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV112_Family_Megasphaeraceae, PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV112_Family_Megasphaeraceae, PA2.trans.df$PA2, p.adjust="bonferroni")
+```
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV10_Lawsonibacter.sp002160305.RS_GCF_002160305_1. ~ PA2,  data = PA2.trans.df)
+
+
+ggboxplot(PA2.trans.df, x = "PA2", y = "ASV10_Lawsonibacter.sp002160305.RS_GCF_002160305_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV10_Lawsonibacter.sp002160305.RS_GCF_002160305_1.", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.15)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV10_Lawsonibacter.sp002160305.RS_GCF_002160305_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV10_Lawsonibacter.sp002160305.RS_GCF_002160305_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV10_Lawsonibacter.sp002160305.RS_GCF_002160305_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV10_Lawsonibacter.sp002160305.RS_GCF_002160305_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+```
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV12_Prevotella.rara.RS_GCF_001275135_1. ~ PA2,  data = PA2.trans.df)
+
+
+ggboxplot(PA2.trans.df, x = "PA2", y = "ASV12_Prevotella.rara.RS_GCF_001275135_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV12_Prevotella.rara.RS_GCF_001275135_1.", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.3)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV12_Prevotella.rara.RS_GCF_001275135_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV12_Prevotella.rara.RS_GCF_001275135_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV12_Prevotella.rara.RS_GCF_001275135_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV12_Prevotella.rara.RS_GCF_001275135_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+```
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV5_Mediterraneibacter.sp002159505.RS_GCF_002159505_1. ~ PA2,  data = PA2.trans.df)
+
+
+ggboxplot(PA2.trans.df, x = "PA2", y = "ASV5_Mediterraneibacter.sp002159505.RS_GCF_002159505_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV5_Mediterraneibacter.sp002159505.RS_GCF_002159505_1.", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.35)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV5_Mediterraneibacter.sp002159505.RS_GCF_002159505_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV5_Mediterraneibacter.sp002159505.RS_GCF_002159505_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV5_Mediterraneibacter.sp002159505.RS_GCF_002159505_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV5_Mediterraneibacter.sp002159505.RS_GCF_002159505_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+```
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV356_Spiro.01.sp900769955.RS_GCF_900769955_1. ~ PA2,  data = PA2.trans.df)
+
+
+ggboxplot(PA2.trans.df, x = "PA2", y = "ASV356_Spiro.01.sp900769955.RS_GCF_900769955_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV356_Spiro.01.sp900769955.RS_GCF_900769955_1.", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.03)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV356_Spiro.01.sp900769955.RS_GCF_900769955_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV356_Spiro.01.sp900769955.RS_GCF_900769955_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV356_Spiro.01.sp900769955.RS_GCF_900769955_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV356_Spiro.01.sp900769955.RS_GCF_900769955_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+```
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV812_UBA4855.sp900540365.GB_GCA_900540365_1. ~ PA2,  data = PA2.trans.df)
+
+
+ggboxplot(PA2.trans.df, x = "PA2", y = "ASV812_UBA4855.sp900540365.GB_GCA_900540365_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV812_UBA4855.sp900540365.GB_GCA_900540365_1.", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.003)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV812_UBA4855.sp900540365.GB_GCA_900540365_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV812_UBA4855.sp900540365.GB_GCA_900540365_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV812_UBA4855.sp900540365.GB_GCA_900540365_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV812_UBA4855.sp900540365.GB_GCA_900540365_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+```
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV1186_Genus_Brachyspira ~ PA2,  data = PA2.trans.df)
+
+
+ggboxplot(PA2.trans.df, x = "PA2", y = "ASV1186_Genus_Brachyspira", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV1186_Genus_Brachyspira", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.012)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV1186_Genus_Brachyspira)
+# Result shows not normal
+
+
+kruskal.test(ASV1186_Genus_Brachyspira ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV1186_Genus_Brachyspira, PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV1186_Genus_Brachyspira, PA2.trans.df$PA2, p.adjust="bonferroni")
+```
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV312_Olsenella_E.sp002159625.RS_GCF_002159625_1. ~ PA2,  data = PA2.trans.df)
+
+
+ggboxplot(PA2.trans.df, x = "PA2", y = "ASV312_Olsenella_E.sp002159625.RS_GCF_002159625_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV312_Olsenella_E.sp002159625.RS_GCF_002159625_1.", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.2)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV312_Olsenella_E.sp002159625.RS_GCF_002159625_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV312_Olsenella_E.sp002159625.RS_GCF_002159625_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV312_Olsenella_E.sp002159625.RS_GCF_002159625_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV312_Olsenella_E.sp002159625.RS_GCF_002159625_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+```
+
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV262_UBA1436.sp002432025.GB_GCA_002432025_1. ~ PA2,  data = PA2.trans.df)
+
+
+ggboxplot(PA2.trans.df, x = "PA2", y = "ASV262_UBA1436.sp002432025.GB_GCA_002432025_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV262_UBA1436.sp002432025.GB_GCA_002432025_1.", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.12)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV262_UBA1436.sp002432025.GB_GCA_002432025_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV262_UBA1436.sp002432025.GB_GCA_002432025_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV262_UBA1436.sp002432025.GB_GCA_002432025_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV262_UBA1436.sp002432025.GB_GCA_002432025_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+```
+
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV6051_Genus_Enterococcus_D ~ PA2,  data = PA2.trans.df)
+
+
+ggboxplot(PA2.trans.df, x = "PA2", y = "ASV6051_Genus_Enterococcus_D", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV6051_Genus_Enterococcus_D", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.001)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV6051_Genus_Enterococcus_D)
+# Result shows not normal
+
+
+kruskal.test(ASV6051_Genus_Enterococcus_D ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV6051_Genus_Enterococcus_D, PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV6051_Genus_Enterococcus_D, PA2.trans.df$PA2, p.adjust="bonferroni")
+```
+
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV162_Genus_Ruminococcus_D ~ PA2,  data = PA2.trans.df)
+
+
+ggboxplot(PA2.trans.df, x = "PA2", y = "ASV162_Genus_Ruminococcus_D", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV162_Genus_Ruminococcus_D", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.03)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV162_Genus_Ruminococcus_D)
+# Result shows not normal
+
+
+kruskal.test(ASV162_Genus_Ruminococcus_D ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV162_Genus_Ruminococcus_D, PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV162_Genus_Ruminococcus_D, PA2.trans.df$PA2, p.adjust="bonferroni")
+```
+
+
+
+
+##################################################################################################
+
+############################        ABUNDANT GENERA         ######################################
+
+#################################################################################################
+
+
+
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV6_Kingdom_Bacteria ~ PA2,  data = PA2.trans.df)
+
+
+ggboxplot(PA2.trans.df, x = "PA2", y = "ASV6_Kingdom_Bacteria", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV6_Kingdom_Bacteria", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.3)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV6_Kingdom_Bacteria)
+# Result shows not normal
+
+
+kruskal.test(ASV6_Kingdom_Bacteria ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV6_Kingdom_Bacteria, PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV6_Kingdom_Bacteria, PA2.trans.df$PA2, p.adjust="bonferroni")
+```
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV8_Lactobacillus.crispatus.RS_GCF_002088015_1. ~ PA2,  data = PA2.trans.df)
+
+
+ggboxplot(PA2.trans.df, x = "PA2", y = "ASV8_Lactobacillus.crispatus.RS_GCF_002088015_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV8_Lactobacillus.crispatus.RS_GCF_002088015_1.", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.3)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV8_Lactobacillus.crispatus.RS_GCF_002088015_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV8_Lactobacillus.crispatus.RS_GCF_002088015_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV8_Lactobacillus.crispatus.RS_GCF_002088015_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV8_Lactobacillus.crispatus.RS_GCF_002088015_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+```
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV9_Alistipes.shahii.RS_GCF_000210575_1. ~ PA2,  data = PA2.trans.df)
+
+
+ggboxplot(PA2.trans.df, x = "PA2", y = "ASV9_Alistipes.shahii.RS_GCF_000210575_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV9_Alistipes.shahii.RS_GCF_000210575_1.", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.6)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV9_Alistipes.shahii.RS_GCF_000210575_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV9_Alistipes.shahii.RS_GCF_000210575_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV9_Alistipes.shahii.RS_GCF_000210575_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV9_Alistipes.shahii.RS_GCF_000210575_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+```
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV16_Cloacibacillus.porcorum.RS_GCF_001701045_1. ~ PA2,  data = PA2.trans.df)
+
+
+ggboxplot(PA2.trans.df, x = "PA2", y = "ASV16_Cloacibacillus.porcorum.RS_GCF_001701045_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV16_Cloacibacillus.porcorum.RS_GCF_001701045_1.", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.275)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV16_Cloacibacillus.porcorum.RS_GCF_001701045_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV16_Cloacibacillus.porcorum.RS_GCF_001701045_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV16_Cloacibacillus.porcorum.RS_GCF_001701045_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV16_Cloacibacillus.porcorum.RS_GCF_001701045_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+```
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV17_Family_Oscillospiraceae ~ PA2,  data = PA2.trans.df)
+
+
+ggboxplot(PA2.trans.df, x = "PA2", y = "ASV17_Family_Oscillospiraceae", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV17_Family_Oscillospiraceae", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.2)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV17_Family_Oscillospiraceae)
+# Result shows not normal
+
+
+kruskal.test(ASV17_Family_Oscillospiraceae ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV17_Family_Oscillospiraceae, PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV17_Family_Oscillospiraceae, PA2.trans.df$PA2, p.adjust="bonferroni")
+```
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV20_Akkermansia.muciniphila.RS_GCF_000020225_1. ~ PA2,  data = PA2.trans.df)
+
+
+ggboxplot(PA2.trans.df, x = "PA2", y = "ASV20_Akkermansia.muciniphila.RS_GCF_000020225_1.", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV20_Akkermansia.muciniphila.RS_GCF_000020225_1.", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.3)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV20_Akkermansia.muciniphila.RS_GCF_000020225_1.)
+# Result shows not normal
+
+
+kruskal.test(ASV20_Akkermansia.muciniphila.RS_GCF_000020225_1. ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV20_Akkermansia.muciniphila.RS_GCF_000020225_1., PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV20_Akkermansia.muciniphila.RS_GCF_000020225_1., PA2.trans.df$PA2, p.adjust="bonferroni")
+```
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV7_Genus_Campylobacter_D ~ PA2,  data = PA2.trans.df)
+
+
+ggboxplot(PA2.trans.df, x = "PA2", y = "ASV7_Genus_Campylobacter_D", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV7_Genus_Campylobacter_D", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.3)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV7_Genus_Campylobacter_D)
+# Result shows not normal
+
+
+kruskal.test(ASV7_Genus_Campylobacter_D ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV7_Genus_Campylobacter_D, PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV7_Genus_Campylobacter_D, PA2.trans.df$PA2, p.adjust="bonferroni")
+```
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV7_Genus_Campylobacter_D ~ PA2,  data = PA2.trans.df)
+
+
+ggboxplot(PA2.trans.df, x = "PA2", y = "ASV7_Genus_Campylobacter_D", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV7_Genus_Campylobacter_D", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.3)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV7_Genus_Campylobacter_D)
+# Result shows not normal
+
+
+kruskal.test(ASV7_Genus_Campylobacter_D ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV7_Genus_Campylobacter_D, PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV7_Genus_Campylobacter_D, PA2.trans.df$PA2, p.adjust="bonferroni")
+```
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV7_Genus_Campylobacter_D ~ PA2,  data = PA2.trans.df)
+
+
+ggboxplot(PA2.trans.df, x = "PA2", y = "ASV7_Genus_Campylobacter_D", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV7_Genus_Campylobacter_D", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.3)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV7_Genus_Campylobacter_D)
+# Result shows not normal
+
+
+kruskal.test(ASV7_Genus_Campylobacter_D ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV7_Genus_Campylobacter_D, PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV7_Genus_Campylobacter_D, PA2.trans.df$PA2, p.adjust="bonferroni")
+```
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(ASV7_Genus_Campylobacter_D ~ PA2,  data = PA2.trans.df)
+
+
+ggboxplot(PA2.trans.df, x = "PA2", y = "ASV7_Genus_Campylobacter_D", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "ASV7_Genus_Campylobacter_D", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 0.3)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.trans.df$ASV7_Genus_Campylobacter_D)
+# Result shows not normal
+
+
+kruskal.test(ASV7_Genus_Campylobacter_D ~ PA2, data = PA2.trans.df)
+pairwise.wilcox.test(PA2.trans.df$ASV7_Genus_Campylobacter_D, PA2.trans.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.trans.df$ASV7_Genus_Campylobacter_D, PA2.trans.df$PA2, p.adjust="bonferroni")
+```
+
