@@ -1,0 +1,198 @@
+---
+title: "Figure 1_Map"
+author: "Melanie Hay"
+date: "2023-04-24"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+# Acknowledgements
+
+The following sites were used for advice: \# <https://r-spatial.org/r/2018/10/25/ggplot2-sf.html> \# <https://r-spatial.org/r/2018/10/25/ggplot2-sf-2.html>
+
+These packages can either be installed by selecting them from the Package Manager, or by running the following chunk. You only need to install the packages once. In the future- you will simply "load" the packages you want.
+
+# Run to install packages.
+
+```{r Install packages}
+#install.packages(c("cowplot", "googleway", "ggplot2", "ggrepel", "ggspatial", "libwgeom", "sf", "rnaturalearth", "rnaturalearthdata", "readr"))
+```
+
+You only need to install packages once. But you will need to "load" them every time that you start a new r-session. Each time you restart an r-session, be sure to run the chunk below.
+
+# Lets load our packages
+
+```{r Load packages}
+library("ggplot2")
+library("ggmap")
+library("sf")
+library("rnaturalearth")
+library("rnaturalearthdata")
+library("ggspatial")
+library("readr")
+library("scatterpie")
+library(ggrepel)
+
+theme_set(theme_bw())
+```
+
+# Lets load some data
+
+The data we are loading is some sample data from some of the chickens sampled in Gujarat (India). This data frame was created pulling data from different spreadsheets in the repository. 
+
+```{r}
+library(readr)
+map_metadata <- read_csv("Farm_GPS_metadata.csv")
+cities <- read_csv("Major_cities.csv")
+#View(map_metadata)
+```
+
+# Lets start creating a map!
+
+There are a number of ways to get base map data.
+
+Just a few open-source maps are listed below:
+
+<https://cran.r-project.org/web/packages/rnaturalearth/vignettes/rnaturalearth.html#>:\~:text=rnaturalearth%20is%20a%20data%20package,countries%20ne_countries()
+
+You can have a look at the type of data available by running the chunk below. You should have a 43 row by 4 column dataframe. The first colum tells you the kind of metadata that comes packaged with this rnaturalearth data.
+
+```{r, Look at the available metadata in the rnaturalearth data}
+df_layers_cultural
+```
+
+First we create a special kind of object called an "sf" object which has both spatial data and metadata. We don't need the whole world. Lets just get the data for India. We are going to get it at medium resolution and we are asking it to return the data in the form on the aforementioned "sf" object.
+
+```{r Base map of the Poultry Hub countries}
+
+# First we create a special kind of object called an "sf" object which has both spatial data and metadata. 
+
+fadh.sf <-  ne_countries(country="india", scale = "medium", returnclass = "sf")
+fadh_gujarat.sf <- ne_states(country="india", geounit = "india", returnclass = "sf")
+
+# checking that it is indeed an sf object
+class(fadh.sf) 
+
+# Lets look at the base map!
+sp::plot(ne_countries(country="india", type = "countries", scale = "medium"))
+sp::plot(ne_states(country="india"))
+
+#Save the plot for the wiki!
+#png(file="wiki/tut.0.png",
+#width=600, height=350)
+#sp::plot(ne_countries(country=c("india"), type = "countries", scale = "medium"))
+#dev.off()
+```
+
+# Lets add detail by plotting in ggplot!
+
+These maps are regenerated many times to show the effect of the additional line on the maps appearance. However- this is for learning purposes only. usually- the plot can be made all at once. 
+
+```{r}
+ggplot(data = fadh_gujarat.sf) +
+    geom_sf(name="Gujarat") +
+    coord_sf(xlim = c(68, 80), ylim = c(22, 32), expand = FALSE)
+#ggsave("tut.1.base.png", device="png", dpi=300)
+```
+
+Now lets add labels to the x- and y- axes for Longitutde and Lattitude.
+
+```{r}
+ggplot(data = fadh_gujarat.sf) +
+    geom_sf() +
+    xlab("Longitude") + ylab("Latitude")
+#ggsave("wiki/tut.2.x-ylabs.png", device="png", dpi=300)
+
+```
+
+# We can add colour to our polygons to colour in the land mass.
+
+```{r}
+ggplot(data = fadh_gujarat.sf) +
+    geom_sf() +
+    xlab("Longitude") + ylab("Latitude") +
+  geom_sf(color = "black", fill = "wheat") 
+#ggsave("wiki/tut.3.color.png", device="png", dpi=300)
+```
+
+# now we add scale
+```{r}
+ggplot(data = fadh_gujarat.sf) +
+    geom_sf() +
+    xlab("Longitude") + ylab("Latitude") +
+  geom_sf(color = "black", fill = "wheat") +
+    annotation_scale(location = "br", width_hint = 0.5) 
+#ggsave("wiki/tut.4.scale.png", device="png", dpi=300)
+
+
+```
+
+# now we add a north arrow
+```{r}
+ggplot(data = fadh_gujarat.sf) +
+    geom_sf() +
+    xlab("Longitude") + ylab("Latitude") +
+  geom_sf(color = "black", fill = "wheat") +
+    annotation_scale(location = "br", width_hint = 0.25) +
+    annotation_north_arrow(location = "tr", which_north = "true", 
+        pad_x = unit(0.25, "in"), pad_y = unit(0.25, "in"),
+        style = north_arrow_fancy_orienteering)
+
+#ggsave("wiki/tut.5.Narrow.png", device="png", dpi=300)
+```
+
+
+# Now lets add some Farm data
+ 
+Lets mark some farms on the map!
+
+# Map with enterotypes
+
+```{r, fig.width=14, fig.height=8}
+ent_pallette <- c("black", "#F86B62", "#00BA38", "#619CFF")
+
+ggplot(data = fadh_gujarat.sf) +
+    geom_sf() +
+    xlab("Longitude") + ylab("Latitude") +
+  geom_sf(color = "black", fill = "wheat") +
+    annotation_north_arrow(location = "tl", which_north = "true", 
+        pad_x = unit(0.25, "in"), pad_y = unit(0.25, "in"),
+        style = north_arrow_fancy_orienteering) +
+    #geom_point(data = map_metadata, aes(x = E_GPS, y = N_GPS, shape = Breed), size = 4, 
+        #fill = "darkred") +
+geom_scatterpie(data = map_metadata, aes(x = E_GPS, y = N_GPS, linetype = Breed, color= Breed), pie_scale = 0.78, alpha = 0.75, cols = colnames(map_metadata[,c(5:8)])) +
+    coord_sf(xlim = c(68, 75), ylim = c(20, 25), expand = FALSE) + scale_fill_manual(values=c("grey", "#F86B62", "#00BA38", "#619CFF")) + scale_linetype_manual(values = c(1, 2, 1)) + scale_color_manual(values = c("#fdfdc2", "black","black")) +
+    theme(panel.background = element_rect(fill = "aliceblue")) +
+    annotation_scale(location = "bl", width_hint = 0.25) + geom_point(data = cities, aes(x = Longitude, y = Latitude, size=Area), shape=5, color="#4B382A") + geom_text(data = cities, aes(x = Longitude, y = Latitude, label = City_Name), vjust = 0, nudge_y = -0.125, check_overlap = TRUE)
+
+ggsave("Figure1_map_enterotypes.svg", width=14, height=8, dpi=300)
+#ggsave(ggsave("wiki/tut.7.sites.fixed.png", device="png", dpi=300))
+```
+
+# Map with chicken lines
+
+```{r, fig.width=14, fig.height=8}
+
+ggplot(data = fadh_gujarat.sf) +
+    geom_sf() +
+    xlab("Longitude") + ylab("Latitude") +
+  geom_sf(color = "black", fill = "wheat") +
+    annotation_north_arrow(location = "tl", which_north = "true", 
+        pad_x = unit(0.25, "in"), pad_y = unit(0.25, "in"),
+        style = north_arrow_fancy_orienteering) +
+geom_scatterpie(data = map_metadata, aes(x = E_GPS, y = N_GPS), pie_scale = 0.78, alpha = 0.75, cols = colnames(map_metadata[,c(9:10)])) +
+    coord_sf(xlim = c(68, 75), ylim = c(20, 25), expand = FALSE) + scale_fill_manual(values=c("white", "black")) + scale_linetype_manual(values = c(1, 3, 5)) + scale_color_manual(values = c("lightgrey", "black","darkgrey")) +
+    theme(panel.background = element_rect(fill = "aliceblue")) +
+    annotation_scale(location = "bl", width_hint = 0.25) + geom_point(data = cities, aes(x = Longitude, y = Latitude), shape=23, fill="#795C32") + geom_text(data = cities, aes(x = Longitude, y = Latitude, label = City_Name), vjust = 0, nudge_y = -0.125, check_overlap = TRUE)
+
+ggsave("Figure1_map_farms.svg", width=14, height=8, dpi=300)
+#ggsave(ggsave("wiki/tut.7.sites.fixed.png", device="png", dpi=300))
+```
+
+
+
+
+
+
+
