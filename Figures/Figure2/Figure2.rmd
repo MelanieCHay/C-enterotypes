@@ -1,0 +1,404 @@
+---
+title: "Figure2"
+author: "Melanie Hay"
+date: "2022-12-12"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(phyloseq); packageVersion("phyloseq")
+
+# General data analysis
+library(data.table); packageVersion("data.table")
+library(tidyverse)
+library(dplyr)
+library("FactoMineR")
+library("factoextra")
+
+# For plotting
+library(ggplot2); packageVersion("ggplot2")
+library(scales)
+library(ggpubr)
+library(ggrepel)
+library(scico)
+library(GGally)
+
+# set palette
+ent_palette <- c("#F86B62", "#00BA38", "#619CFF")
+```
+
+# Resources  
+http://www.sthda.com/english/wiki/fviz-pca-quick-principal-component-analysis-data-visualization-r-software-and-data-mining#fviz_pca_biplot-biplot-of-individuals-of-variables
+
+
+## Figure 2 R Markdown
+
+Figure 2 has three sections. We start with the PCA (A), followed by relative abundance of the enterotypes by Phylum (B) and Genus (C), and finally we have alpha diversity box plot comparisons (D, E, F, G) 
+
+
+#### A) PCA
+
+# Perform the PCA
+```{r}
+# First we load the clr-transformed abundance data (otu table)
+
+PCA.381.pre <- read.csv("PCA.381.fig2.csv", row.names = 1)
+
+# This table contains all data including the samples that fell "between" the three major enterotype clusters. Therefore, the first step is to remove the samples with a "NA" enterotype. 
+
+PCA.381 <- filter(PCA.381.pre, Enterotype!=is.na(Enterotype))
+
+# Principal component analysis
+g.res.pca  <- PCA(PCA.381, quali.sup=382, graph = TRUE) 
+#Extract and visualize eigenvalues/variances:
+# Extract eigenvalues/variances
+get_eig(g.res.pca)
+
+# Visualize eigenvalues/variances
+fviz_screeplot(g.res.pca, addlabels = TRUE, ylim = c(0, 30))
+
+# Extract the results for variables
+g.var <- get_pca_var(g.res.pca)
+
+# Coordinates of variables
+head(g.var$coord)
+
+# Contribution of variables
+head(g.var$contrib)
+
+cos2.rank.pca <- data.frame(g.var$cos2)
+```
+
+# Examining the variables ( genera) 
+
+Graphs and tables here are exploratory- not in the final manuscript
+```{r, fig.height=20, fig.width=24}
+
+# Graph of variables: default plot
+fviz_pca_var(g.res.pca, col.var = "black", repel = TRUE,)
+
+# Control variable colors using their contributions
+fviz_pca_var(g.res.pca, col.var="contrib",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE) # Avoid text overlapping
+             
+
+# Variable contributions to the principal axes:
+# Contributions of variables to PC1
+fviz_contrib(g.res.pca, choice = "var", axes = 1, top = 20)
+# Contributions of variables to PC2
+fviz_contrib(g.res.pca, choice = "var", axes = 2, top = 20)
+# Contributions of variables to PC3
+fviz_contrib(g.res.pca, choice = "var", axes = 3, top = 20)
+
+# select the top 15 contributing variables
+cos2_12 <- fviz_cos2(g.res.pca, choice="var", axes = 1:2, top = 15)
+cos2_12
+cos2_12.df <- cos2_12$data
+write.csv(cos2_12.df, "CLR_cos2_381.csv")
+```
+
+# Examining the spread of samples
+
+Graphs and tables here are exploratory- not in the final manuscript
+
+```{r, fig.height=12, fig.width=14}
+# Extract the results for individuals
+g.ind <- get_pca_ind(g.res.pca)
+g.ind
+
+# Coordinates of individuals
+head(g.ind$coord)
+
+# Graph of individuals
+# 1. Use repel = TRUE to avoid overplotting
+# 2. Control automatically the color of individuals using the cos2
+    # cos2 = the quality of the individuals on the factor map
+    # Use points only
+# 3. Use gradient color
+fviz_pca_ind(g.res.pca, col.ind = "cos2",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE # Avoid text overlapping (slow if many points)
+             )
+
+quali.sup=382
+
+fviz_pca_ind(g.res.pca, habillage=quali.sup, palette=ent_palette, col.var= "black", geom = "point", addEllipses = TRUE, ellipse.level=0.92, pointsize=3, ggtheme=theme_bw())
+```
+
+
+
+# Biplot of individuals and variables
+```{r, fig.height=12, fig.width=14}
+
+PCA <- fviz_pca_biplot(g.res.pca, habillage=quali.sup, palette=ent_palette, col.var= "black", repel = TRUE, geom = "point", addEllipses = TRUE, ellipse.level=0.92, pointsize=3, ggtheme=theme_bw()) 
+PCA 
+PCA_recorded <- recordPlot()
+
+
+fviz_pca_biplot(g.res.pca, repel = TRUE, habillage=quali.sup, palette = ent_palette, geom = "point", select.var=list(cos2=0.4), col.var= "black", addEllipses = TRUE, ellipse.level=0.95, pointsize=3)
+#ggsave("images/PCA.png")
+
+PCA13 <- fviz_pca_biplot(g.res.pca, axes=c(1,3), habillage=quali.sup, palette=ent_palette, col.var= "black", repel = TRUE, geom = "point", select.var=list(cos2=0.4), addEllipses = TRUE, ellipse.level=0.92, pointsize=3, ggtheme=theme_bw())
+PCA13
+
+PCA23 <- fviz_pca_biplot(g.res.pca, axes=c(2,3), habillage=quali.sup, palette=ent_palette, col.var= "black", repel = TRUE, geom = "point", select.var=list(cos2=0.4), addEllipses = TRUE, ellipse.level=0.92, pointsize=3, ggtheme=theme_bw())
+PCA23
+```
+
+# B) and C) Relative abundance plots for different enetrotypes
+
+# B) 
+
+```{r}
+# top 25 genera
+# select ps object
+RA.ps <- readRDS("fig2-RA.ps.rds")
+
+sample_data(RA.ps)$Enterotype
+sample_data(RA.ps)$RA_Enterotype <- sample_data(RA.ps)$Enterotype
+
+
+sample_data(RA.ps)$RA_Enterotype[sample_data(RA.ps)$RA_Enterotype == "PA2.1"]  <- "PA1"
+sample_data(RA.ps)$RA_Enterotype[sample_data(RA.ps)$RA_Enterotype == "PA2.2"]  <- "PA2"
+sample_data(RA.ps)$RA_Enterotype[sample_data(RA.ps)$RA_Enterotype == "PA2.3"]  <- "PA3"
+
+sample_data(RA.ps)$RA_Enterotype
+
+PA2.merge <- merge_samples(RA.ps, "RA_Enterotype")
+sample_names(PA2.merge)
+
+PA.merge.r <- transform_sample_counts(PA2.merge, function(OTU) OTU/sum(OTU))
+```
+
+# B) Relative abundance of phyla in different enterotypes 
+```{r}
+
+PA.merge.phy <- tax_glom(PA2.merge, taxrank="Phylum", NArm = FALSE)
+PA.merge.phy.r <- transform_sample_counts(PA.merge.phy, function(OTU) OTU/sum(OTU))
+
+library(RColorBrewer)
+# Define the number of colors you want
+nb.cols <- 14
+mycolors12 <- colorRampPalette(brewer.pal(8, "Paired"))(nb.cols)
+# Create a ggplot with 18 colors 
+# Use scale_fill_manual
+
+
+#PA1
+PA.merge.phy.top <- names(sort(taxa_sums(PA.merge.phy.r), decreasing=TRUE))[1:14]
+PA.merge.top.phy.ps <- prune_taxa(PA.merge.phy.top, PA.merge.phy.r)
+RA_phy <- plot_bar(PA.merge.top.phy.ps, fill = "Phylum") + guides(fill = guide_legend(nrow = 14)) +
+  scale_fill_manual(values = mycolors12) + theme_bw() + theme(axis.text.x = element_text(angle = 0, hjust = 1))  + scale_y_continuous(breaks=seq(0,1,0.1))
+
+RA_phy
+ggsave("Fig2_RA_phy.png")
+```
+
+#c Relative abundance of genera in different enterotypes
+```{r, fig.width=8, fig.height=7}
+library(RColorBrewer)
+# Define the number of colors you want
+nb.cols <- 25
+mycolors <- colorRampPalette(brewer.pal(8, "Paired"))(nb.cols)
+# Create a ggplot with 18 colors 
+# Use scale_fill_manual
+
+#PA1
+PA.merge.top <- names(sort(taxa_sums(PA.merge.r), decreasing=TRUE))[1:25]
+PA1.merge.top.ps <- prune_taxa(PA.merge.top, PA.merge.r)
+RA_genus <- plot_bar(PA1.merge.top.ps, fill = "Genus") + guides(fill = guide_legend(nrow = 25)) +
+  scale_fill_manual(values = mycolors) + theme_bw() + theme(axis.text.x = element_text(angle = 0, hjust = 1))  + scale_y_continuous(breaks=seq(0,1,0.1))
+
+RA_genus
+#ggsave("images/RA_genus.png")
+#p2
+p2.abundance.df <- p2$data
+
+```
+
+
+
+```{r}
+PCA_RA <- ggarrange(fviz_pca_biplot(g.res.pca, 
+                          habillage=quali.sup, palette=ent_palette, col.var= "black", repel = TRUE, geom = "point", addEllipses = TRUE,
+                          ellipse.level=0.92, pointsize=3, ggtheme=theme_bw()) +
+  theme(plot.title = element_blank(), legend.text = element_text(size=12), legend.title = element_text(size=14)),  # First row with scatter plot
+          ggarrange(plot_bar(PA.merge.top.phy.ps, fill = "Phylum") + guides(fill = guide_legend(nrow = 14)) +
+  scale_fill_manual(values = mycolors12) + theme_bw() + theme(legend.text = element_text(size=12), legend.title = element_text(size=14)) + labs(x = "Enterotype") + theme(axis.text=element_text(size=12), axis.title=element_text(size=14)) + theme(axis.text.x = element_text(angle = 0, hjust = 1))  + scale_y_continuous(breaks=seq(0,1,0.1)),
+                    plot_bar(PA1.merge.top.ps, fill = "Genus") + guides(fill = guide_legend(nrow = 25)) +  
+  scale_fill_manual(values = mycolors) + theme_bw() + theme(legend.text = element_text(size=12), legend.title = element_text(size=14)) + labs(x = "Enterotype") +theme(axis.text=element_text(size=12),
+        axis.title=element_text(size=14)) + theme(axis.text.x = element_text(angle = 0, hjust = 1))  + scale_y_continuous(breaks=seq(0,1,0.1)),
+          ncol = 2, labels = c("B", "C")), # Second row with box and dot plots
+          nrow = 2, 
+          labels = "A")                                        
+
+ggsave("PCA_RA.png", plot=PCA_RA, scale = 1, width = 14, height = 16, units = "in", dpi = 300)
+
+```
+
+# D-G: alphadiversity comparison
+```{r, Read in dataframe with alphadiversity info}
+# base alphadiversity on an UNFILTERED, rarefied (reads=11111) dataset at ASV level. 
+
+PA2.df <- read.csv("PA2_alphadiversity_compare.csv")
+```
+
+
+
+```{r, Add enterotype info, alphadiversity and otu abundance to ps object metadata}
+
+my_comparisonsPA <- list(c("PA1", "PA2"), c("PA2", "PA3"), c("PA1", "PA3")) 
+```
+
+# D Observed
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+
+ent_palette <- c("#F86B62", "#00BA38", "#619CFF")
+compare_means(Observed ~ PA2,  data = PA2.df)
+
+AObs <- ggboxplot(PA2.df, x = "PA2", y = "Observed", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "Observed", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) +
+ggpubr::stat_compare_means(label.y = 1500)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.df$Observed)
+# Result shows not normal
+
+AObs
+#ggsave("images/AObs.png",
+  #plot = last_plot(),
+  #scale = 1,
+  #width = 3.5,
+  #height = 3,
+  #units = c("in"),
+  #dpi = 300)
+
+kruskal.test(Observed ~ PA2, data = PA2.df)
+pairwise.wilcox.test(PA2.df$Observed, PA2.df$PA2,
+                 p.adjust.method = "BH")
+
+pairwise.wilcox.test(PA2.df$Observed, PA2.df$PA2, p.adjust="bonferroni")
+```
+
+# E Chao1
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(Chao1 ~ PA2,  data = PA2.df)
+
+AChao <- ggboxplot(PA2.df, x = "PA2", y = "Chao1", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "Chao1", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) +
+ggpubr::stat_compare_means(label.y = 1750)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.df$Chao1)
+# Result shows not normal
+
+
+kruskal.test(Chao1 ~ PA2, data = PA2.df)
+pairwise.wilcox.test(PA2.df$Chao1, PA2.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.df$Chao1, PA2.df$PA2, p.adjust="bonferroni")
+
+AChao
+#ggsave("images/AChao.png",
+  #plot = last_plot(),
+  #scale = 1,
+  #width = 3.5,
+  #height = 3,
+  #units = c("in"),
+  #dpi = 300)
+
+```
+
+#F Shannon 
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(Shannon ~ PA2,  data = PA2.df)
+
+
+AShan <- ggboxplot(PA2.df, x = "PA2", y = "Shannon", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "Shannon", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) +
+ggpubr::stat_compare_means(label.y = 7)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.df$Shannon)
+# Result shows not normal
+
+
+kruskal.test(Shannon ~ PA2, data = PA2.df)
+pairwise.wilcox.test(PA2.df$Shannon, PA2.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.df$Shannon, PA2.df$PA2, p.adjust="bonferroni")
+
+AShan
+
+#ggsave("images/Shan.png",
+ # plot = last_plot(),
+  #scale = 1,
+  #width = 3.5,
+  #height = 3,
+  #units = c("in"),
+  #dpi = 300)
+```
+
+#G InvSimpson
+
+```{r, fig.width = 3.5, fig.height =3, alphadiversity}
+# Perorm pairwise comparisons
+compare_means(InvSimpson ~ PA2,  data = PA2.df)
+
+
+AInvSim <- ggboxplot(PA2.df, x = "PA2", y = "InvSimpson", 
+          fill = "PA2", palette = ent_palette,
+          ylab = "InvSimpson", xlab = "Enterotype") + guides(fill = "none") + 
+  ggpubr::stat_compare_means(comparisons = my_comparisonsPA) + ggpubr::stat_compare_means(label.y = 190)   # Add pairwise comparisons p-value
+
+# test for normality 
+shapiro.test(PA2.df$InvSimpson)
+# Result shows not normal
+
+
+kruskal.test(InvSimpson ~ PA2, data = PA2.df)
+pairwise.wilcox.test(PA2.df$InvSimpson, PA2.df$PA2,
+                 p.adjust.method = "BH")
+
+
+pairwise.wilcox.test(PA2.df$InvSimpson, PA2.df$PA2, p.adjust="bonferroni")
+
+AInvSim
+
+#ggsave("images/AInvSim.png",
+  #plot = last_plot(),
+  #scale = 1,
+  #width = 3.5,
+  #height = 3,
+  #units = c("in"),
+  #dpi = 300)
+
+```
+
+```{r, fig.width = 14, fig.height =3.2}
+
+alphadiversity2 <- ggarrange(AObs, AChao, AShan, AInvSim, ncol = 4, labels = c("D", "E", "F", "G", widths = 3.5,
+  heights = 3))
+alphadiversity2
+
+ggsave("alphadiversity.png", width = 14, height = 3.2,)
+```
