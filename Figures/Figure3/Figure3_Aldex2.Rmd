@@ -1,0 +1,236 @@
+---
+title: "Figure3_ALDEX2"
+author: "Melanie Hay"
+date: "2023-10-30"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ALDEx2)
+```
+
+## R Markdown
+
+# ALDEX2
+
+## PA1 PA2
+
+```{r, fig.width=3.5, fig.height=12}
+library(ALDEx2)
+aldex381 <- read.csv("aldex381.csv", row.names = 1)
+aldex2PA1PA2 <- read.csv("aldex381.sort.PA1.PA2.csv", row.names = 1)
+
+aldex2PA1PA2 <- t(aldex2PA1PA2)
+
+aldex381.sort <- aldex381[base::order(aldex381$PA2),]
+
+#subset only the last 400 features for efficiency
+#aldex381[order(aldex381$PA),]
+
+conds <- c(rep("PA2.1", 290), rep("PA2.2", 142))
+x.all_PA12 <- aldex(aldex2PA1PA2, conds, mc.samples=1000, test="t", effect=TRUE,
+     include.sample.summary=FALSE, denom="all", verbose=FALSE)
+
+par(mfrow=c(3,1))
+aldex.plot(x.all_PA12, type="MA", test="welch", xlab="Log-ratio abundance",
+    ylab="Difference")
+aldex.plot(x.all_PA12, type="MW", test="welch", xlab="Dispersion",
+    ylab="Difference")
+
+# identify which values are significant in all tests
+found.by.all <- which(x.all_PA12$we.eBH < 0.05 &
+x.all_PA12$wi.eBH < 0.05)
+# identify which values are significant in fewer than all tests
+found.by.one <- which(x.all_PA12$we.eBH < 0.05 |
+x.all_PA12$wi.eBH < 0.05)
+ # plot the within and between variation of the data
+base::plot(x.all_PA12$diff.win, x.all_PA12$diff.btw, pch=19, cex=0.3, col=rgb(0,0,0,0.3), xlab="Difference within", ylab="Difference betweenn")
+points(x.all_PA12$diff.win[found.by.one], x.all_PA12$diff.btw[found.by.one], pch=19, cex=0.5, col=rgb(0,0,1,0.5))
+points(x.all_PA12$diff.win[found.by.all], x.all_PA12$diff.btw[found.by.all], pch=19, cex=0.5, col=rgb(1,0,0,1))
+abline(0,1,lty=2)
+abline(0,-1,lty=2)
+write.csv(x.all_PA12, "results_aldex.all_PA12.csv")
+
+```
+
+```{r, fig.width=3.5, fig.height=12}
+
+aldex2PA1PA3 <- read.csv("aldex381.sort.PA1.PA3.csv", row.names = 1)
+
+aldex2PA1PA3 <- t(aldex2PA1PA3)
+
+conds <- c(rep("PA1", 290), rep("PA3", 67))
+x.all_PA13 <- aldex(aldex2PA1PA3, conds, mc.samples=1000, test="t", effect=TRUE,
+     include.sample.summary=FALSE, denom="all", verbose=FALSE)
+
+par(mfrow=c(3,1))
+aldex.plot(x.all_PA13, type="MA", test="welch", xlab="Log-ratio abundance",
+    ylab="Difference")
+aldex.plot(x.all_PA13, type="MW", test="welch", xlab="Dispersion",
+    ylab="Difference")
+
+found.by.all <- which(x.all_PA13$we.eBH < 0.05 &
+x.all_PA13$wi.eBH < 0.05)
+# identify which values are significant in fewer than all tests
+found.by.one <- which(x.all_PA13$we.eBH < 0.05 |
+x.all_PA13$wi.eBH < 0.05)
+ # plot the within and between variation of the data
+base::plot(x.all_PA13$diff.win, x.all_PA13$diff.btw, pch=19, cex=0.3, col=rgb(0,0,0,0.3), xlab="Difference within", ylab="Difference betweenn")
+points(x.all_PA13$diff.win[found.by.one], x.all_PA13$diff.btw[found.by.one], pch=19, cex=0.5, col=rgb(0,0,1,0.5))
+points(x.all_PA13$diff.win[found.by.all], x.all_PA13$diff.btw[found.by.all], pch=19, cex=0.5, col=rgb(1,0,0,1))
+abline(0,1,lty=2)
+abline(0,-1,lty=2)
+
+write.csv(x.all_PA13, "results_aldex.all_PA13.csv")
+
+```
+
+
+```{r, fig.width=3.5, fig.height=12}
+
+aldex2PA2PA3 <- read.csv("aldex381.sort.PA2.PA3.csv", row.names = 1)
+aldex2PA2PA3 <- t(aldex2PA2PA3)
+
+
+conds <- c(rep("PA2", 142), rep("PA3", 67))
+x.all_PA23 <- aldex(aldex2PA2PA3, conds, mc.samples=1000, test="t", effect=TRUE,
+     include.sample.summary=FALSE, denom="all", verbose=FALSE)
+
+par(mfrow=c(3,1))
+aldex.plot(x.all_PA23, type="MA", test="welch", xlab="Log-ratio abundance",
+    ylab="Difference")
+aldex.plot(x.all_PA23, type="MW", test="welch", xlab="Dispersion",
+    ylab="Difference")
+
+found.by.all <- which(x.all_PA23$we.eBH < 0.05 &
+x.all_PA23$wi.eBH < 0.05)
+# identify which values are significant in fewer than all tests
+found.by.one <- which(x.all_PA23$we.eBH < 0.05 |
+x.all_PA23$wi.eBH < 0.05)
+ # plot the within and between variation of the data
+base::plot(x.all_PA23$diff.win, x.all_PA23$diff.btw, pch=19, cex=0.3, col=rgb(0,0,0,0.3), xlab="Difference within", ylab="Difference betweenn")
+points(x.all_PA23$diff.win[found.by.one], x.all_PA23$diff.btw[found.by.one], pch=19, cex=0.5, col=rgb(0,0,1,0.5))
+points(x.all_PA23$diff.win[found.by.all], x.all_PA23$diff.btw[found.by.all], pch=19, cex=0.5, col=rgb(1,0,0,1))
+abline(0,1,lty=2)
+abline(0,-1,lty=2)
+
+write.csv(x.all_PA23, "results_aldex.all_PA23.csv")
+```
+
+# Aldex can also be run on the other filtered datasets. 
+
+E.g. below. 
+
+```{r, fig.width=3.5, fig.height=12}
+library(ALDEx2)
+
+aldex_PA1PA2 <- read.csv("C:/Users/mchay/Desktop/github/FADH_microbiome/df/aldex250.sort.PA1.PA2.csv", row.names = 1)
+aldex_PA1PA2 <- t(aldex_PA1PA2)
+
+#aldex250.sort <- aldex250[base::order(aldex250$PA2),]
+
+#subset only the last 400 features for efficiency
+#aldex250[order(aldex250$PA),]
+
+conds <- c(rep("PA1", 290), rep("PA2", 142))
+x.all_PA12 <- aldex(aldex_PA1PA2, conds, mc.samples=1000, test="t", effect=TRUE,
+     include.sample.summary=FALSE, denom="all", verbose=FALSE)
+
+par(mfrow=c(3,1))
+aldex.plot(x.all_PA12, type="MA", test="welch", xlab="Log-ratio abundance",
+    ylab="Difference")
+aldex.plot(x.all_PA12, type="MW", test="welch", xlab="Dispersion",
+    ylab="Difference")
+
+# identify which values are significant in all tests
+found.by.all <- which(x.all_PA12$we.eBH < 0.05 &
+x.all_PA12$wi.eBH < 0.05)
+# identify which values are significant in fewer than all tests
+found.by.one <- which(x.all_PA12$we.eBH < 0.05 |
+x.all_PA12$wi.eBH < 0.05)
+ # plot the within and between variation of the data
+base::plot(x.all_PA12$diff.win, x.all_PA12$diff.btw, pch=19, cex=0.3, col=rgb(0,0,0,0.3), xlab="Difference within", ylab="Difference betweenn")
+points(x.all_PA12$diff.win[found.by.one], x.all_PA12$diff.btw[found.by.one], pch=19, cex=0.5, col=rgb(0,0,1,0.5))
+points(x.all_PA12$diff.win[found.by.all], x.all_PA12$diff.btw[found.by.all], pch=19, cex=0.5, col=rgb(1,0,0,1))
+abline(0,1,lty=2)
+abline(0,-1,lty=2)
+#write.csv(x.all_250_PA12, "C:/Users/mchay/Desktop/github/FADH_microbiome/df/aldex.all_250_PA12.csv")
+
+
+```
+
+```{r, fig.width=3.5, fig.height=12}
+
+aldex250_PA1PA3 <- read.csv("C:/Users/mchay/Desktop/github/FADH_microbiome/df/aldex381.sort.PA1.PA3.csv", row.names = 1)
+
+aldex250_PA1PA3 <- t(aldex250_PA1PA3)
+
+#aldex250.sort <- aldex250[base::order(aldex250$PA2),]
+
+#subset only the last 400 features for efficiency
+#aldex250[order(aldex250$PA),]
+
+conds <- c(rep("PA2.1", 290), rep("PA2.3", 67))
+x.all_250_PA13 <- aldex(aldex250_PA1PA3, conds, mc.samples=1000, test="t", effect=TRUE,
+     include.sample.summary=FALSE, denom="all", verbose=FALSE)
+
+par(mfrow=c(3,1))
+aldex.plot(x.all_250_PA13, type="MA", test="welch", xlab="Log-ratio abundance",
+    ylab="Difference")
+aldex.plot(x.all_250_PA13, type="MW", test="welch", xlab="Dispersion",
+    ylab="Difference")
+
+found.by.all <- which(x.all_250_PA13$we.eBH < 0.05 &
+x.all_250_PA13$wi.eBH < 0.05)
+# identify which values are significant in fewer than all tests
+found.by.one <- which(x.all_250_PA13$we.eBH < 0.05 |
+x.all_250_PA13$wi.eBH < 0.05)
+ # plot the within and between variation of the data
+base::plot(x.all_250_PA13$diff.win, x.all_250_PA13$diff.btw, pch=19, cex=0.3, col=rgb(0,0,0,0.3), xlab="Difference within", ylab="Difference betweenn")
+points(x.all_250_PA13$diff.win[found.by.one], x.all_250_PA13$diff.btw[found.by.one], pch=19, cex=0.5, col=rgb(0,0,1,0.5))
+points(x.all_250_PA13$diff.win[found.by.all], x.all_250_PA13$diff.btw[found.by.all], pch=19, cex=0.5, col=rgb(1,0,0,1))
+abline(0,1,lty=2)
+abline(0,-1,lty=2)
+
+#write.csv(x.all_250_PA13, "C:/Users/mchay/Desktop/github/FADH_microbiome/df/aldex.all_250_PA13.csv")
+
+```
+
+
+```{r, fig.width=3.5, fig.height=12}
+
+aldex250_PA2PA3 <- read.csv("C:/Users/mchay/Desktop/github/FADH_microbiome/df/aldex250.sort.PA2.PA3.csv", row.names = 1)
+
+aldex250_PA2PA3 <- t(aldex250_PA2PA3)
+
+#aldex250.sort <- aldex250[base::order(aldex250$PA2),]
+
+#subset only the last 400 features for efficiency
+#aldex250[order(aldex250$PA),]
+
+conds <- c(rep("PA2.2", 142), rep("PA2.3", 67))
+x.all_250_PA23 <- aldex(aldex250_PA2PA3, conds, mc.samples=1000, test="t", effect=TRUE,
+     include.sample.summary=FALSE, denom="all", verbose=FALSE)
+
+par(mfrow=c(3,1))
+aldex.plot(x.all_250_PA23, type="MA", test="welch", xlab="Log-ratio abundance",
+    ylab="Difference")
+aldex.plot(x.all_250_PA23, type="MW", test="welch", xlab="Dispersion",
+    ylab="Difference")
+
+write.csv(x.all_250_PA23, "C:/Users/mchay/Desktop/github/FADH_microbiome/df/aldex.all_250_PA23.csv")
+
+found.by.all <- which(x.all_250_PA23$we.eBH < 0.05 &
+x.all_250_PA23$wi.eBH < 0.05)
+# identify which values are significant in fewer than all tests
+found.by.one <- which(x.all_250_PA23$we.eBH < 0.05 |
+x.all_250_PA23$wi.eBH < 0.05)
+ # plot the within and between variation of the data
+base::plot(x.all_250_PA23$diff.win, x.all_250_PA23$diff.btw, pch=19, cex=0.3, col=rgb(0,0,0,0.3), xlab="Difference within", ylab="Difference betweenn")
+points(x.all_250_PA23$diff.win[found.by.one], x.all_250_PA23$diff.btw[found.by.one], pch=19, cex=0.5, col=rgb(0,0,1,0.5))
+points(x.all_250_PA23$diff.win[found.by.all], x.all_250_PA23$diff.btw[found.by.all], pch=19, cex=0.5, col=rgb(1,0,0,1))
+abline(0,1,lty=2)
+abline(0,-1,lty=2)
+```
+
