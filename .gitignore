@@ -7,7 +7,7 @@
 .RDataTmp
 
 # Folder
-IGNORE/*
+*/*/IGNORE/*
 
 # Large files
 *.tiff
