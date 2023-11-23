@@ -1,0 +1,100 @@
+---
+title: "Variable_importance"
+author: "Melanie Hay"
+date: "2022-11-28"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(randomForestSRC)
+#library(FFTrees)
+library(caret)
+library(e1071)
+library(groupdata2)
+library(plotROC)
+library(ggplot2)
+library(dplyr)
+```
+
+## Including Plots
+
+```{r, echo=FALSE}
+saveRDS(fit_rf_1, "df/rf/fit_rf_1.rds")
+saveRDS(fit_rf_2, "df/rf/fit_rf_2.rds")
+saveRDS(fit_rf_3, "df/rf/fit_rf_3.rds")
+saveRDS(fit_rf_4, "df/rf/fit_rf_4.rds")
+saveRDS(fit_rf_5, "df/rf/fit_rf_5.rds")
+```
+
+
+# RF1 
+```{r}
+rf1_varimp <- as.data.frame(gbmImp1$importance)
+write.csv(rf1_varimp, "df/rf/rf1_varimp.csv")
+```
+
+```{r, fig.height=4, fig.width=12}
+varImp(fit_rf_1)
+gbmImp1 <- varImp(fit_rf_1)
+plot(gbmImp1, top = 20)
+summary(fit_rf_1)
+```
+
+# RF2
+```{r}
+rf2_varimp <- as.data.frame(gbmImp2$importance)
+write.csv(rf2_varimp, "df/rf/rf2_varimp.csv")
+```
+
+```{r, fig.height=4, fig.width=22}
+varImp(fit_rf_2)
+gbmImp2 <- varImp(fit_rf_2)
+plot(gbmImp2, top = 20)
+summary(fit_rf_2)
+```
+
+# RF3 
+
+```{r}
+rf3_varimp <- as.data.frame(gbmImp3$importance)
+write.csv(rf3_varimp, "df/rf/rf3_varimp.csv")
+```
+
+```{r, fig.height=4, fig.width=32}
+varImp(fit_rf_3)
+gbmImp3 <- varImp(fit_rf_3)
+plot(gbmImp3, top = 20)
+summary(fit_rf_3)
+```
+
+# RF4
+
+```{r}
+rf4_varimp <- as.data.frame(gbmImp4$importance)
+write.csv(rf4_varimp, "df/rf/rf4_varimp.csv")
+```
+
+```{r, fig.height=4, fig.width=42}
+varImp(fit_rf_4)
+gbmImp4 <- varImp(fit_rf_4)
+plot(gbmImp4, top = 20)
+summary(fit_rf_4)
+```
+
+# RF5
+
+```{r}
+rf5_varimp <- as.data.frame(gbmImp5$importance)
+write.csv(rf5_varimp, "df/rf/rf5_varimp.csv")
+```
+
+```{r, fig.height=4, fig.width=52}
+varImp(fit_rf_5)
+gbmImp5 <- varImp(fit_rf_5)
+plot(gbmImp5, top = 20)
+summary(fit_rf_5)
+```

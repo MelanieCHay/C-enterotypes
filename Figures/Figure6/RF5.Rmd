@@ -1,0 +1,257 @@
+---
+title: "RF4"
+author: "Melanie Hay"
+date: "2022-07-31"
+output: html_document
+---
+
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+
+```{r, split farms into train and test (80:20)}
+
+set.seed(777)
+TrainTestPart5 <- createDataPartition(y=farms.df$PA2, p=0.8, list=FALSE)
+
+str(TrainTestPart5)
+
+training5 <- farms.df[ TrainTestPart5,]
+testing5 <- farms.df[-TrainTestPart5,]
+
+summary(training5)
+summary_training5 <- summary(training5)
+summary(testing5)
+summary_testing5 <- summary(testing5)
+
+#write.csv(summary_testing5, "df/rf/summary_test5.csv")
+
+nrow(training5)
+nrow(testing5)
+
+test5_farms <- as.vector(testing5$Farm_uni_ID)
+test5_farms
+
+test5.df <- filter(model.gps.cent.df, model.gps.cent.df$Farm_uni_ID %in% test5_farms)
+train5.df <- filter(model.gps.cent.df, !model.gps.cent.df$Farm_uni_ID %in% test5_farms)
+
+write.csv(test5.df, "df/rf/test5.df.csv")
+write.csv(train5.df, "df/rf/train5.df.csv")
+
+```
+
+```{r, groupKFold (from caret) on training set to split farms into diffrent test sets}
+k <- length(unique(train5.df$Farm_uni_ID))
+k
+#head(folds[2])
+folds5 <- groupKFold(train5.df$Farm_uni_ID, k = 50) 
+```
+
+
+# Turn categorical to dummy
+```{r}
+train5.df <- as.data.frame(unclass(train5.df), stringsAsFactors = TRUE)
+dummies = dummyVars(PA2 ~ ., data = train5.df) # convert categorical variables to dummies
+dummies_train5 <- data.frame(predict (dummies, newdata = train5.df))
+dummies_train5$PA2 <- train5.df$PA2
+```
+
+# Preprocess train and test separately
+
+```{r}
+training.sep5 <- dummies_train5
+testing.sep5 <- test5.df
+
+
+# Non zero variance
+nzv(training.sep5)
+nzv(testing.sep5)
+
+# Highly correlated
+training.sep5.cor <- training.sep5[61:90]
+calculateCor5 <- cor(training.sep5.cor[1:29])
+summary(calculateCor5[upper.tri(calculateCor5)], cutoff = 0.9)
+
+# 
+highlyCor5 <- findCorrelation(calculateCor5) #pick highly correlated variables
+colnames(training.sep5.cor)[highlyCor5]
+
+highlyCorDescr5 <- findCorrelation(calculateCor5, cutoff = .9)
+highlyCorDescr5
+```
+
+```{r}
+set.seed(777)
+
+seeds5 = vector(mode="list", length=101)
+for (i in 1:100) seeds5[[i]] = sample.int(1000,486)
+seeds5[[101]] = sample.int(1000,1)
+
+```
+
+
+```{r}
+trControl5 <- trainControl(method = "repeatedcv",
+    number=10,                   
+    repeats=7,
+    p = 0.85,
+    sampling = "down",
+    seeds=seeds5,
+    index=folds5,
+    search = "grid",
+    savePredictions = "all",
+    returnResamp = "all",
+    classProbs=TRUE)
+```
+
+```{r}
+train5.model.df <- train5.df[2:29]
+set.seed(777)
+# Run the model
+rf_train5 <- train(PA2 ~ .,
+    method="rf",
+    data = train5.model.df,
+    importance=TRUE,
+    na.action = na.omit,
+    metric = "Accuracy",
+    trControl = trControl5)
+
+# Print the results
+print(rf_train5)
+rf_train5$results
+```
+
+
+
+```{r, Search best mtry}
+set.seed(777)
+tuneGrid5 <- expand.grid(.mtry = c(15: 150))
+rf_mtry <- train(PA2 ~.,
+    data = train5.model.df,
+    method = "rf",
+    metric = "Accuracy",
+    tuneGrid = tuneGrid5,
+    trControl = trControl5,
+    nodesize = 1,
+    na.action = na.omit,
+    ntree = 300)
+print(rf_mtry)
+```
+
+
+```{r}
+best_mtry <- rf_mtry$bestTune$mtry 
+best_mtry
+
+```
+
+```{r, Step 3) Search the best maxnodes}
+
+store_maxnode <- list()
+tuneGrid5 <- expand.grid(.mtry = best_mtry)
+for (maxnodes in c(5: 30)) {
+    rf_maxnode <- train(PA2 ~.,
+        data = train5.model.df,
+        method = "rf",
+        metric = "Accuracy",
+        tuneGrid = tuneGrid5,
+        trControl = trControl5,
+        importance = TRUE,
+        nodesize = 1,
+        na.action = na.omit,
+        maxnodes = maxnodes,
+        ntree = 300)
+    current_iteration <- toString(maxnodes)
+    store_maxnode[[current_iteration]] <- rf_maxnode
+}
+results_mtry <- resamples(store_maxnode)
+summary(results_mtry)
+
+```
+
+```{r, Step 4) Search the best ntrees}
+
+store_maxtrees <- list()
+for (ntree in c(250, 300, 350, 400, 450, 500, 550, 600, 800, 1000, 2000)) {
+    rf_maxtrees <- train(PA2 ~.,
+        data = train5.model.df,
+        method = "rf",
+        metric = "Accuracy",
+        tuneGrid = tuneGrid5,
+        trControl = trControl5,
+        importance = TRUE,
+        maxnodes = 18,
+        nodesize = 1,
+        na.action = na.omit,
+        ntree = ntree)
+    key <- toString(ntree)
+    store_maxtrees[[key]] <- rf_maxtrees
+}
+results_tree <- resamples(store_maxtrees)
+summary(results_tree)
+
+```
+
+
+
+```{r}
+fit_rf_5 <- train(PA2 ~.,
+    train5.model.df,
+    method = "rf",
+    metric = "Accuracy",
+    tuneGrid = tuneGrid5,
+    trControl = trControl5,
+    importance = TRUE,
+    maxnodes = 18,
+    nodesize = 1,
+    ntree = 350,
+    na.action = na.omit)
+
+```
+
+```{r, fig.height=4, fig.width=12}
+varImp(fit_rf_5)
+gbmImp5 <- varImp(fit_rf_5)
+plot(gbmImp5, top = 20)
+summary(fit_rf_5)
+
+
+```
+
+```{r, fig.height=4, fig.width=12}
+gmbImp5.df <- as.data.frame(gbmImp5$importance)
+#write.csv(gmbImp5.df, "df/figure_edit/gbmImp5_edit.csv")
+
+importance5.df <- read.csv("df/figure_edit/gbmImp5_edit.csv", row.names = 1)
+gbmImp5$importance <- as.data.frame(importance5.df)
+
+png("images/RF5Imp.png", width=12, height=4, units="in", res =300)
+RF5Imp <- plot(gbmImp5, top = 20)
+RF5Imp
+dev.off()
+
+
+```
+
+
+```{r}
+test5.model.df <- test5.df[2:29] 
+prediction5 <-predict(fit_rf_5, test5.model.df)
+
+prediction5
+test5.model.df$PA2 <- as.factor(test5.model.df$PA2)
+
+identical(levels(prediction5),levels(test5.model.df$PA2))
+confusionMatrix(prediction5, test5.model.df$PA2)
+
+```
+
+
+
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

@@ -1,0 +1,314 @@
+---
+title: "RandomForest"
+author: "Melanie Hay"
+date: "2022-07-22"
+output: html_document
+---
+
+```{r}
+library(randomForestSRC)
+#library(FFTrees)
+library(caret)
+library(e1071)
+library(groupdata2)
+library(plotROC)
+library(ggplot2)
+library(dplyr)
+```
+
+# Read in data
+
+```{r}
+
+#model.df <- read.csv("PATH", sep=",", header = TRUE) 
+#GPS.df <- read.csv("CPATH", sep=",", header = TRUE)
+#model.gps.df <- full_join(model.df, GPS.df, by = 'Farm_uni_ID')
+#model.gps.df <- read.csv("CPATH")
+#model.gps.cent.df <- read.csv("PATH")
+#write.csv(model.gps.df, "df/model.GPS.csv")
+#yes==1, no==0
+#high=1, Normal=0
+#natural=0, Artificial=1
+#Water-automatic=0, manual=1
+#feed_stored outside premises=0, Within premises=1
+#Breed_strain commercial=0, Kadaknath=1
+#Farm type: C=0, CK=0.5, K=1
+
+model.df <- as.data.frame(unclass(model.df), stringsAsFactors = TRUE)
+model.gps.df <- as.data.frame(unclass(model.gps.df), stringsAsFactors = TRUE)
+model.gps.cent.df <- as.data.frame(unclass(model.gps.cent.df), stringsAsFactors = TRUE)
+```
+
+```{r, split farms into train and test (85:15)}
+#farms.df <- read.csv("PATH", sep=",", header = TRUE)
+farms.df <- as.data.frame(unclass(farms.df), stringsAsFactors = TRUE)
+# set 1
+set.seed(36)
+TrainTestPart1 <- createDataPartition(y=farms.df$PA2, p=0.80, list=FALSE)
+
+str(TrainTestPart1)
+
+training1 <- farms.df[ TrainTestPart1,]
+testing1 <- farms.df[-TrainTestPart1,]
+
+summary(training1)
+summary_training1 <- summary(training1)
+summary(testing1)
+summary_testing1 <- summary(testing1)
+
+#write.csv(summary_testing1, "df/rf/summary_test1.csv")
+
+nrow(training1)
+nrow(testing1)
+
+test1_farms <- as.vector(testing1$Farm_uni_ID)
+test1_farms
+
+test1.df <- filter(model.gps.cent.df, model.gps.cent.df$Farm_uni_ID %in% test1_farms)
+train1.df <- filter(model.gps.cent.df, !model.gps.cent.df$Farm_uni_ID %in% test1_farms)
+
+write.csv(test1.df, "df/rf/test1.df.csv")
+write.csv(train1.df, "df/rf/train1.df.csv")
+```
+
+```{r}
+
+
+set.seed(777)
+TrainTestPart5 <- createDataPartition(y=farms.df$PA2, p=0.80, list=FALSE)
+
+str(TrainTestPart5)
+
+training5 <- farms.df[ TrainTestPart5,]
+testing5 <- farms.df[-TrainTestPart5,]
+
+summary(training5)
+summary(testing5)
+
+nrow(training5)
+nrow(testing5)
+```
+
+# Considerations
+# from (http://topepo.github.io/caret/data-splitting.html#simple-splitting-with-important-groups)
+In some cases there is an important qualitative factor in the data that should be considered during (re)sampling. For example:
+in clinical trials, there may be hospital-to-hospital differences with longitudinal or repeated measures data, subjects (or general independent experimental unit) may have multiple rows in the data set, etc.
+There may be an interest in making sure that these groups are not contained in the training and testing set since this may bias the test set performance to be more optimistic. Also, when one or more specific groups are held out, the resampling might capture the “ruggedness” of the model. In the example where clinical data is recorded over multiple sites, the resampling performance estimates partly measure how extensible the model is across sites.
+
+To split the data based on groups, groupKFold can be used:
+
+In this study, we know that chickens from the same farm share the same "farm characteristics" and more likely to be similar to each other. Therefore, if we have farms in both the training and testing set, we have potential data leakage and a possible overestimation of our model.  
+
+We are therefore going to use groupKFold to partition the data.
+
+```{r, groupKFold (from caret) on training set to split farms into diffrent test sets}
+k <- length(unique(train1.df$Farm_uni_ID))
+k
+#head(folds[1])
+folds1 <- groupKFold(train1.df$Farm_uni_ID, k = 10) 
+```
+
+
+# Turn categorical to dummy
+```{r}
+train1.df <- as.data.frame(unclass(train1.df), stringsAsFactors = TRUE)
+dummies = dummyVars(PA2 ~ ., data = train1.df) # convert categorical variables to dummies
+dummies_train1 <- data.frame(predict (dummies, newdata = train1.df))
+dummies_train1$PA2 <- train1.df$PA2
+```
+
+
+# Partition Data into train and test
+
+```{r}
+set.seed(37)
+TrainTestPart <- createDataPartition(y=Ent.dummies$PA2, p=0.7, list=FALSE)
+
+str(TrainTestPart)
+
+training <- Ent.dummies[ TrainTestPart,]
+testing <- Ent.dummies[-TrainTestPart,]
+
+summary(training)
+summary(testing)
+
+nrow(training)
+nrow(testing)
+```
+
+# Preprocess train and test separately
+
+```{r}
+training.sep1 <- dummies_train1
+#testing.sep1 <- test1.df
+
+
+# Non zero variance
+nzv(training.sep1)
+nzv(testing.sep1)
+
+# Highly correlated
+training.sep1.cor <- training.sep1[60:90]
+calculateCor1 <- cor(training.sep1.cor[1:30])
+summary(calculateCor1[upper.tri(calculateCor1)])
+
+# 
+highlyCor1 <- findCorrelation(calculateCor1) #pick highly correlated variables
+colnames(training.sep1.cor)[highlyCor1]
+
+highlyCorDescr1 <- findCorrelation(calculateCor1, cutoff = .9)
+highlyCorDescr1
+
+# Center and scale
+
+
+#testTransformed <- predict(preProcValues, testing.sep1)
+```
+
+
+
+```{r}
+set.seed(36)
+
+seeds1 = vector(mode="list", length=101)
+for (i in 1:100) seeds1[[i]] = sample.int(1000,486)
+seeds1[[101]] = sample.int(1000,1)
+
+```
+
+```{r}
+trControl1 <- trainControl(method = "repeatedcv",
+    p = 0.85,
+    sampling = "down",
+    seeds=seeds1,
+    index=folds1,
+    search = "grid",
+    savePredictions = "all",
+    classProbs=TRUE, 
+    verboseIter = TRUE)
+```
+
+```{r}
+train1.model.df <- train1.df[2:29]
+set.seed(36)
+# Run the model
+rf_train1 <- train(PA2 ~ .,
+    method="rf",
+    data = train1.model.df,
+    importance=TRUE,
+    na.action = na.omit,
+    metric = "Accuracy",
+    trControl = trControl1)
+
+# Print the results
+print(rf_train1)
+rf_train1$results
+```
+
+
+
+```{r, Search best mtry}
+
+tuneGrid1 <- expand.grid(.mtry = c(15: 150))
+rf_mtry <- train(PA2 ~.,
+    data = train1.model.df,
+    method = "rf",
+    metric = "Accuracy",
+    tuneGrid = tuneGrid1,
+    trControl = trControl1,
+    nodesize = 1,
+    na.action = na.omit,
+    ntree = 300)
+print(rf_mtry)
+```
+
+```{r}
+best_mtry <- rf_mtry$bestTune$mtry 
+best_mtry
+
+```
+
+```{r, Step 3) Search the best maxnodes}
+
+store_maxnode <- list()
+tuneGrid1 <- expand.grid(.mtry = best_mtry)
+for (maxnodes in c(5: 40)) {
+    rf_maxnode <- train(PA2 ~.,
+        data = train1.model.df,
+        method = "rf",
+        metric = "Accuracy",
+        tuneGrid = tuneGrid1,
+        trControl = trControl1,
+        importance = TRUE,
+        nodesize = 1,
+        na.action = na.omit,
+        maxnodes = maxnodes,
+        ntree = 300)
+    current_iteration <- toString(maxnodes)
+    store_maxnode[[current_iteration]] <- rf_maxnode
+}
+results_mtry <- resamples(store_maxnode)
+
+summary(results_mtry)
+
+```
+
+```{r, Step 4) Search the best ntrees}
+
+store_maxtrees <- list()
+for (ntree in c(250, 300, 350, 400, 450, 500, 550, 600, 800, 1000, 2000)) {
+    rf_maxtrees <- train(PA2 ~.,
+        data = train1.model.df,
+        method = "rf",
+        metric = "Accuracy",
+        tuneGrid = tuneGrid1,
+        trControl = trControl1,
+        importance = TRUE,
+        nodesize = 1,
+        maxnodes = 12,
+        na.action = na.omit,
+        ntree = ntree)
+    key <- toString(ntree)
+    store_maxtrees[[key]] <- rf_maxtrees
+}
+results_tree <- resamples(store_maxtrees)
+summary(results_tree)
+
+```
+
+```{r}
+fit_rf_1 <- train(PA2 ~.,
+    train1.model.df,
+    method = "rf",
+    metric = "Accuracy",
+    tuneGrid = tuneGrid1,
+    trControl = trControl1,
+    importance = TRUE,
+    maxnodes = 21,
+    nodesize = 1,
+    ntree = 450,
+    na.action = na.omit)
+
+```
+```{r, fig.height=4, fig.width=12}
+varImp(fit_rf_1)
+gbmImp1 <- varImp(fit_rf_1)
+plot(gbmImp1, top = 20)
+summary(fit_rf_1)
+
+rf1_imp.df <- as.data.frame(summary(fit_rf_1))
+```
+
+
+```{r}
+test1.model.df <- test1.df[2:29] 
+prediction1 <-predict(fit_rf_1, test1.model.df)
+
+prediction1
+test1.model.df$PA2 <- as.factor(test1.model.df$PA2)
+
+identical(levels(prediction1),levels(test1.model.df$PA2))
+confusionMatrix(prediction1, test1.model.df$PA2)
+
+```
+
