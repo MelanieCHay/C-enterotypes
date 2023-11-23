@@ -6,6 +6,11 @@
 .RData
 .RDataTmp
 
+# Folder
+IGNORE/*
+
+# Large files
+*.tiff
 # User-specific files
 .Ruserdata
 
